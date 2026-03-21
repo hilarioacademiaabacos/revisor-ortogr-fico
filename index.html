@@ -731,7 +731,7 @@ function buildPromptEjemplos(categoria) {
 var informeTexto = '';
 
     // ── Función auxiliar: llamada a Gemini y devuelve texto ──
-async function llamarGemini(promptSistema, partesUsuario, msgLoading) {
+async function llamarGemini(apiKey, promptSistema, partesUsuario, msgLoading) {
     document.getElementById('loading-msg').textContent = msgLoading;
     var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
     var resp = await fetch(url, {
@@ -800,7 +800,7 @@ async function revisarTexto() {
     }
 
     // ── LLAMADA 1: conteo general ──
-    var raw1 = await llamarGemini(buildPromptConteo(), partes, 'Contando errores…');
+    var raw1 = await llamarGemini(apiKey, buildPromptConteo(), partes, 'Contando errores…');
     var conteo = parsearJSON(raw1);
 
     // ── LLAMADAS 2, 3, 4: ejemplos por categoría (solo si hay errores) ──
@@ -810,11 +810,11 @@ async function revisarTexto() {
       : partes;
 
     if ((conteo.fg || 0) > 0) {
-      var r2 = await llamarGemini(buildPromptEjemplos('graves'), partesTexto, 'Obteniendo ejemplos de faltas…');
+      var r2 = await llamarGemini(apiKey, buildPromptEjemplos('graves'), partesTexto, 'Obteniendo ejemplos de faltas…');
       try { ejemplosGraves = parsearJSON(r2).items || []; } catch(e) { ejemplosGraves = []; }
     }
     if ((conteo.et || 0) > 0) {
-      var r3 = await llamarGemini(buildPromptEjemplos('tildes'), partesTexto, 'Obteniendo ejemplos de tildes…');
+      var r3 = await llamarGemini(apiKey, buildPromptEjemplos('tildes'), partesTexto, 'Obteniendo ejemplos de tildes…');
       try { ejemplosTildes = parsearJSON(r3).items || []; } catch(e) { ejemplosTildes = []; }
     }
 
