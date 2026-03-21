@@ -704,25 +704,30 @@ function actualizarContador() {
 // PROMPT
 // ═══════════════════════════════════════════
 function buildPromptConteo() {
-  return 'Corrector ortográfico experto oposiciones Maestros Extremadura.\n'
-    + 'Analiza el texto y CUENTA todos los errores de estas categorías (sin listarlos):\n'
-    + 'FALTAS GRAVES(-0.5p c/u): errores léxicos(b/v,h,ll/y,g/j) | abrev sin punto("pag"→"pág.") | abrev sin espacio("p.ej."→"p. ej.") | ordinal sin punto volada("1º"→"1.º") | sigla con puntos("D.N.I."→"DNI") | sigla+s("ONGs"→"ONG") | abrev informal(xq,tb).\n'
-    + 'ERRORES TILDE(3=1 falta): tilde omitida o incorrecta.\n'
-    + 'Responde SOLO este JSON sin markdown, completo y cerrado:\n'
-    + '{"vg":"Texto limpio|Errores leves|Errores moderados|Errores graves","fg":número,"et":número,"fet":número_decimal,"pt":número_decimal,"v":"2 frases al opositor de tú valorando el resultado"}';
+  return 'Cuenta errores ortográficos en este texto de oposiciones de maestros.\n'
+    + 'FALTAS GRAVES: errores léxicos(b/v,h,ll/y,g/j)|abrev sin punto|abrev sin espacio|ordinal sin punto volada|sigla con puntos|sigla+s|abrev informal.\n'
+    + 'TILDES: cualquier tilde omitida o incorrecta.\n'
+    + 'Devuelve SOLO este JSON (sin texto adicional, sin markdown):\n'
+    + '{"fg":0,"et":0,"fet":0.0,"pt":0.0,"vg":"limpio|leve|moderado|grave"}';
 }
 
 function buildPromptEjemplos(categoria) {
   var desc = {
-    graves: 'FALTAS GRAVES: errores léxicos, abreviaturas sin punto, siglas con puntos, ordinales sin punto volada',
-    tildes: 'ERRORES DE TILDE: palabras con tilde omitida o incorrecta'
+    graves: 'FALTAS GRAVES (errores léxicos, abreviaturas mal formadas, siglas con puntos, ordinales sin punto volada)',
+    tildes: 'ERRORES DE TILDE (tildes omitidas o incorrectas)'
   }[categoria];
-  return 'Corrector ortográfico experto oposiciones Maestros Extremadura.\n'
-    + 'Del texto, extrae los 5 ejemplos MÁS REPRESENTATIVOS de: ' + desc + '.\n'
-    + 'Si hay menos de 5, lista solo los que haya. Si no hay ninguno devuelve items vacío.\n'
-    + 'Cita: solo la palabra errónea (máx 3 palabras). Descripción: máx 5 palabras. Corrección: máx 3 palabras.\n'
-    + 'Responde SOLO este JSON sin markdown, completo y cerrado:\n'
-    + '{"items":[{"c":"cita","d":"descripción","ok":"corrección"}]}';
+  return 'Del siguiente texto de oposiciones de maestros, lista los 5 ejemplos más representativos de: ' + desc + '.\n'
+    + 'Reglas: cita solo la palabra errónea (máx 3 palabras), descripción máx 4 palabras, corrección máx 3 palabras.\n'
+    + 'Si no hay errores de este tipo, devuelve items:[].\n'
+    + 'Devuelve SOLO este JSON sin markdown:\n'
+    + '{"items":[{"c":"palabra","d":"tipo error","ok":"correcto"}]}';
+}
+
+function buildPromptValoracion(fg, et, pt) {
+  return 'Eres un corrector de oposiciones de maestros en Extremadura. '
+    + 'El examen tiene ' + fg + ' faltas graves y ' + et + ' errores de tilde (penalización total: ' + pt + ' puntos). '
+    + 'Escribe 2 frases dirigidas al opositor de tú, tono cordial y constructivo, resumiendo el resultado. '
+    + 'Devuelve SOLO el texto, sin JSON, sin comillas, sin markdown.';
 }
 
 // ═══════════════════════════════════════════
@@ -740,7 +745,7 @@ async function llamarGemini(apiKey, promptSistema, partesUsuario, msgLoading) {
     body: JSON.stringify({
       system_instruction: { parts: [{ text: promptSistema }] },
       contents: [{ role: 'user', parts: partesUsuario }],
-      generationConfig: { temperature: 0.1, maxOutputTokens: 1024 }
+      generationConfig: { temperature: 0.0, maxOutputTokens: 512, responseMimeType: 'application/json' }
     })
     });
     if (!resp.ok) {
@@ -801,10 +806,9 @@ async function revisarTexto() {
 
     // ── LLAMADA 1: conteo general ──
     var raw1 = await llamarGemini(apiKey, buildPromptConteo(), partes, 'Contando errores…');
-    console.log('RAW1:', raw1.substring(0, 300));
     var conteo;
     try { conteo = parsearJSON(raw1); }
-    catch(e) { throw new Error('Error en conteo: ' + e.message + ' | Raw: ' + raw1.substring(0,100)); }
+    catch(e) { throw new Error('Error procesando la respuesta. Inténtalo de nuevo.'); }
 
     // ── LLAMADAS 2, 3: ejemplos por categoría (solo si hay errores) ──
     var ejemplosGraves = [], ejemplosTildes = [], ejemplosAbrev = [];
@@ -814,18 +818,23 @@ async function revisarTexto() {
 
     if ((conteo.fg || 0) > 0) {
       var r2 = await llamarGemini(apiKey, buildPromptEjemplos('graves'), partesTexto, 'Obteniendo ejemplos de faltas…');
-      console.log('RAW2:', r2.substring(0, 200));
       try { ejemplosGraves = parsearJSON(r2).items || []; } catch(e) { console.warn('r2 parse fail:', e.message); ejemplosGraves = []; }
     }
     if ((conteo.et || 0) > 0) {
       var r3 = await llamarGemini(apiKey, buildPromptEjemplos('tildes'), partesTexto, 'Obteniendo ejemplos de tildes…');
-      console.log('RAW3:', r3.substring(0, 200));
       try { ejemplosTildes = parsearJSON(r3).items || []; } catch(e) { console.warn('r3 parse fail:', e.message); ejemplosTildes = []; }
     }
 
+    // Llamada final: valoración en texto libre (sin JSON, no se trunca)
+    var valoracionTxt = '';
+    try {
+      valoracionTxt = await llamarGemini(apiKey, buildPromptValoracion(conteo.fg||0, conteo.et||0, conteo.pt||0), partesTexto, 'Generando valoración…');
+      valoracionTxt = valoracionTxt.replace(/^```[\s\S]*?```$/gm,'').trim();
+    } catch(e) { valoracionTxt = ''; }
+
     // Construir objeto final
     var inf = {
-      vg: conteo.vg || 'Errores graves',
+      vg: conteo.vg || 'grave',
       fg: conteo.fg || 0,
       et: conteo.et || 0,
       fet: conteo.fet || 0,
@@ -833,7 +842,7 @@ async function revisarTexto() {
       eg: ejemplosGraves,
       etd: ejemplosTildes,
       ea: ejemplosAbrev,
-      v: conteo.v || ''
+      v: valoracionTxt
     };
     var clean = JSON.stringify(inf);
 
