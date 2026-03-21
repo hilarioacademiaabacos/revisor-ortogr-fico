@@ -801,9 +801,12 @@ async function revisarTexto() {
 
     // ── LLAMADA 1: conteo general ──
     var raw1 = await llamarGemini(apiKey, buildPromptConteo(), partes, 'Contando errores…');
-    var conteo = parsearJSON(raw1);
+    console.log('RAW1:', raw1.substring(0, 300));
+    var conteo;
+    try { conteo = parsearJSON(raw1); }
+    catch(e) { throw new Error('Error en conteo: ' + e.message + ' | Raw: ' + raw1.substring(0,100)); }
 
-    // ── LLAMADAS 2, 3, 4: ejemplos por categoría (solo si hay errores) ──
+    // ── LLAMADAS 2, 3: ejemplos por categoría (solo si hay errores) ──
     var ejemplosGraves = [], ejemplosTildes = [], ejemplosAbrev = [];
     var partesTexto = tabActual === 'texto'
       ? [{ text: document.getElementById('texto-examen').value.trim() }]
@@ -811,11 +814,13 @@ async function revisarTexto() {
 
     if ((conteo.fg || 0) > 0) {
       var r2 = await llamarGemini(apiKey, buildPromptEjemplos('graves'), partesTexto, 'Obteniendo ejemplos de faltas…');
-      try { ejemplosGraves = parsearJSON(r2).items || []; } catch(e) { ejemplosGraves = []; }
+      console.log('RAW2:', r2.substring(0, 200));
+      try { ejemplosGraves = parsearJSON(r2).items || []; } catch(e) { console.warn('r2 parse fail:', e.message); ejemplosGraves = []; }
     }
     if ((conteo.et || 0) > 0) {
       var r3 = await llamarGemini(apiKey, buildPromptEjemplos('tildes'), partesTexto, 'Obteniendo ejemplos de tildes…');
-      try { ejemplosTildes = parsearJSON(r3).items || []; } catch(e) { ejemplosTildes = []; }
+      console.log('RAW3:', r3.substring(0, 200));
+      try { ejemplosTildes = parsearJSON(r3).items || []; } catch(e) { console.warn('r3 parse fail:', e.message); ejemplosTildes = []; }
     }
 
     // Construir objeto final
