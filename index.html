@@ -704,19 +704,21 @@ function actualizarContador() {
 // PROMPT
 // ═══════════════════════════════════════════
 function buildPromptOrtografico() {
-  return 'Corrector ortográfico experto oposiciones Maestros Extremadura. '
-    + 'Detecta SOLO errores reales, no inventes. Si no hay errores dilo explícitamente.\n'
-    + 'FALTAS GRAVES(-0.5p c/u): error léxico(b/v,h,ll/y,g/j)|abrev sin punto("pag"→"pág.")|abrev compleja sin espacio("p.ej."→"p. ej.","EE.UU."→"EE. UU.")|ordinal sin punto antes volada("1º"→"1.º")|sigla con puntos("D.N.I."→"DNI")|sigla plural -s("ONGs"→"ONG")|abrev no convencional(xq,tb,dnd).\n'
-    + 'ERRORES TILDE(3=1 falta,-0.5p): tilde omitida/incorrecta|abrev sin tilde("pag."→"pág.").\n'
-    + 'ABREV CORRECTAS RAE: art.|pág.|núm./n.º|cap.|p. ej.|C. A./CC. AA.|R. D./RR. DD.|L. O./LL. OO.|U. D./UU. DD.\n'
-    + 'SIGLAS sin puntos entre letras: LOMLOE,DUA,TIC,ONG,DNI.\n'
-    + 'RESPONDE SOLO JSON VÁLIDO SIN MARKDOWN. BIEN CERRADO. CADA descripcion/cita/correccion MAX 20 palabras.\n'
+  return 'Corrector ortográfico experto oposiciones Maestros Extremadura.\n'
+    + 'TAREA: contar todos los errores pero listar SOLO LOS 5 MÁS REPRESENTATIVOS de cada categoría.\n'
+    + 'FALTAS GRAVES(-0.5p c/u): error léxico(b/v,h,ll/y,g/j)|abrev sin punto("pag"→"pág.")|abrev compleja sin espacio("p.ej."→"p. ej.")|ordinal sin punto antes volada("1º"→"1.º")|sigla con puntos("D.N.I."→"DNI")|sigla plural -s("ONGs"→"ONG")|abrev no convencional(xq,tb,dnd).\n'
+    + 'ERRORES TILDE(3=1 falta): tilde omitida/incorrecta.\n'
+    + 'REGLAS: cuenta el total real de cada tipo, pero en los arrays incluye MAX 10 ejemplos representativos.\n'
+    + 'NO inventes errores. Si no hay errores en una categoría, pon array vacío [].\n'
+    + 'RESPONDE SOLO JSON VÁLIDO SIN MARKDOWN. BIEN CERRADO.\n'
     + '{"valoracion_global":"Texto limpio|Errores leves|Errores moderados|Errores graves",'
-    + '"faltas_graves":0,"errores_tilde_total":0,"faltas_equivalentes_tilde":0.0,"penalizacion_total":0.0,'
-    + '"errores_graves":[{"descripcion":"...","cita":"...","correccion":"..."}],'
-    + '"errores_tilde":[{"descripcion":"...","cita":"...","correccion":"..."}],'
-    + '"errores_abreviatura":[{"descripcion":"...","cita":"...","correccion":"..."}],'
-    + '"valoracion_texto":"2-3 frases al opositor de tú, cordial, con impacto en la nota"}';
+    + '"faltas_graves":número_total_real,"errores_tilde_total":número_total_real,'
+    + '"faltas_equivalentes_tilde":decimal,"penalizacion_total":decimal,'
+    + '"errores_graves":[MAX 10 ejemplos: {"descripcion":"tipo error","cita":"palabra exacta","correccion":"forma correcta"}],'
+    + '"errores_tilde":[MAX 10 ejemplos: {"descripcion":"tipo error","cita":"palabra exacta","correccion":"forma correcta"}],'
+    + '"errores_abreviatura":[MAX 10 ejemplos: {"descripcion":"tipo error","cita":"texto exacto","correccion":"forma correcta"}],'
+    + '"nota_aclaratoria":"si hay más de 10 errores en alguna categoría, indicar cuántos más hay en total",'
+    + '"valoracion_texto":"2-3 frases al opositor de tú, cordial, resumiendo hallazgos e impacto en nota"}';
 }
 
 // ═══════════════════════════════════════════
@@ -805,9 +807,6 @@ async function revisarTexto() {
     }
 
     if (!rawAccum) throw new Error('Gemini no devolvió respuesta válida.');
-    console.log('RAW GEMINI (primeros 500):', rawAccum.substring(0, 500));
-    console.log('RAW GEMINI (últimos 200):', rawAccum.substring(rawAccum.length - 200));
-    console.log('Longitud total:', rawAccum.length);
     var clean = rawAccum.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
 
     var inf;
