@@ -704,27 +704,19 @@ function actualizarContador() {
 // PROMPT
 // ═══════════════════════════════════════════
 function buildPromptOrtografico() {
-  return 'Eres un corrector ortográfico experto para oposiciones al Cuerpo de Maestros en Extremadura, España.\n'
-    + 'Analiza el texto y detecta EXCLUSIVAMENTE:\n'
-    + '1.FALTAS GRAVES: errores léxicos(b/v,h,ll/y,g/j,etc)|abreviatura sin punto("pag"→"pág.")|abreviatura compleja sin espacio("p.ej."→"p. ej.","EE.UU."→"EE. UU.")|ordinal sin punto antes de letra volada("1º"→"1.º","2ª"→"2.ª")|sigla con puntos entre letras("D.N.I."→"DNI","L.O.M.L.O.E."→"LOMLOE")|sigla con plural en -s("ONGs"→"ONG")|abreviatura no convencional(xq,tb,dnd,x,d). Cada una: -0.5p.\n'
-    + '2.ERRORES DE TILDE: tilde omitida o incorrecta|abreviatura sin tilde obligatoria("pag."→"pág.","cod."→"cód."). Cada 3 errores=1 falta(-0.5p).\n'
-    + '3.ABREVIATURAS INCORRECTAS: cualquier abreviatura mal formada según RAE.\n'
-    + 'REFERENCIA abreviaturas correctas: art./arts.|pág./págs.|núm./n.º|cap./caps.|sig./ss.|etc.|U.D./UU.DD.|P.D./PP.DD.|p.ej.|C.A./CC.AA.|R.D./RR.DD.|L.O./LL.OO.\n'
-    + 'SIGLAS sin puntos: LOMLOE,DUA,TIC,ONG,DNI,EE.UU.(con espacio pero sin puntos entre letras).\n'
-    + 'NO inventes errores. Solo señala lo que está objetivamente mal. Si el texto es correcto, dilo.\n'
-    + 'Para cada error incluye: cita textual del fragmento erróneo, forma correcta, tipo.\n\n'
-    + 'RESPONDE SOLO JSON VÁLIDO SIN MARKDOWN. JSON COMPLETO Y BIEN CERRADO. MÁXIMO 2000 tokens.\n'
+  return 'Corrector ortográfico experto oposiciones Maestros Extremadura. '
+    + 'Detecta SOLO errores reales, no inventes. Si no hay errores dilo explícitamente.\n'
+    + 'FALTAS GRAVES(-0.5p c/u): error léxico(b/v,h,ll/y,g/j)|abrev sin punto("pag"→"pág.")|abrev compleja sin espacio("p.ej."→"p. ej.","EE.UU."→"EE. UU.")|ordinal sin punto antes volada("1º"→"1.º")|sigla con puntos("D.N.I."→"DNI")|sigla plural -s("ONGs"→"ONG")|abrev no convencional(xq,tb,dnd).\n'
+    + 'ERRORES TILDE(3=1 falta,-0.5p): tilde omitida/incorrecta|abrev sin tilde("pag."→"pág.").\n'
+    + 'ABREV CORRECTAS RAE: art.|pág.|núm./n.º|cap.|p. ej.|C. A./CC. AA.|R. D./RR. DD.|L. O./LL. OO.|U. D./UU. DD.\n'
+    + 'SIGLAS sin puntos entre letras: LOMLOE,DUA,TIC,ONG,DNI.\n'
+    + 'RESPONDE SOLO JSON VÁLIDO SIN MARKDOWN. BIEN CERRADO. CADA descripcion/cita/correccion MAX 20 palabras.\n'
     + '{"valoracion_global":"Texto limpio|Errores leves|Errores moderados|Errores graves",'
-    + '"faltas_graves":int,"errores_tilde":int,'
-    + '"faltas_equivalentes_tilde":num_decimal,'
-    + '"penalizacion_total":num_decimal,'
-    + '"errores_graves":['
-    + '{"descripcion":"qué error es","cita":"fragmento exacto del texto","correccion":"forma correcta"}],'
-    + '"errores_tilde":['
-    + '{"descripcion":"qué error es","cita":"fragmento exacto","correccion":"forma correcta"}],'
-    + '"errores_abreviatura":['
-    + '{"descripcion":"qué error es","cita":"fragmento exacto","correccion":"forma correcta"}],'
-    + '"valoracion_texto":"párrafo breve dirigido al opositor de tú, cordial y constructivo, resumiendo los hallazgos y su impacto en la nota"}';
+    + '"faltas_graves":0,"errores_tilde_total":0,"faltas_equivalentes_tilde":0.0,"penalizacion_total":0.0,'
+    + '"errores_graves":[{"descripcion":"...","cita":"...","correccion":"..."}],'
+    + '"errores_tilde":[{"descripcion":"...","cita":"...","correccion":"..."}],'
+    + '"errores_abreviatura":[{"descripcion":"...","cita":"...","correccion":"..."}],'
+    + '"valoracion_texto":"2-3 frases al opositor de tú, cordial, con impacto en la nota"}';
 }
 
 // ═══════════════════════════════════════════
@@ -780,7 +772,7 @@ async function revisarTexto() {
       body: JSON.stringify({
         system_instruction: { parts: [{ text: buildPromptOrtografico() }] },
         contents: [{ role: 'user', parts: partes }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 4096 }
+        generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
       })
     });
 
@@ -802,18 +794,33 @@ async function revisarTexto() {
     try {
       inf = JSON.parse(clean);
     } catch(e) {
-      // Intentar reparar JSON truncado
+      // Reparar JSON truncado
       var rep = clean;
+      // Cerrar string abierto si hay número impar de comillas
+      var numQuotes = (rep.match(/(?<!\\)"/g)||[]).length;
+      if (numQuotes % 2 !== 0) {
+        // Truncar hasta el último par completo de clave:valor
+        var lastComma = rep.lastIndexOf(',"');
+        if (lastComma > rep.length * 0.5) {
+          rep = rep.substring(0, lastComma);
+        } else {
+          rep = rep.substring(0, rep.lastIndexOf('"')) + '"';
+        }
+      }
+      // Cerrar arrays y objetos abiertos
       var opens = (rep.match(/{/g)||[]).length - (rep.match(/}/g)||[]).length;
       var openArr = (rep.match(/\[/g)||[]).length - (rep.match(/\]/g)||[]).length;
-      if ((rep.match(/"/g)||[]).length % 2 !== 0) {
-        rep = rep.substring(0, rep.lastIndexOf('"')) + '"]';
-        openArr = Math.max(0, openArr - 1);
+      for (var a = 0; a < Math.max(0,openArr); a++) rep += ']';
+      for (var b = 0; b < Math.max(0,opens); b++) rep += '}';
+      try {
+        inf = JSON.parse(rep);
+        if (!inf.valoracion_global) inf.valoracion_global = 'Análisis incompleto';
+        inf.errores_graves = inf.errores_graves || [];
+        inf.errores_tilde = inf.errores_tilde || [];
+        inf.errores_abreviatura = inf.errores_abreviatura || [];
+      } catch(e2) {
+        throw new Error('El modelo devolvió una respuesta incompleta. Inténtalo de nuevo o reduce el tamaño del texto.');
       }
-      for (var a = 0; a < openArr; a++) rep += ']';
-      for (var b = 0; b < opens; b++) rep += '}';
-      try { inf = JSON.parse(rep); }
-      catch(e2) { throw new Error('El modelo devolvió un JSON malformado. Inténtalo de nuevo.'); }
     }
 
     renderResultado(inf);
