@@ -805,6 +805,9 @@ async function revisarTexto() {
     }
 
     if (!rawAccum) throw new Error('Gemini no devolvió respuesta válida.');
+    console.log('RAW GEMINI (primeros 500):', rawAccum.substring(0, 500));
+    console.log('RAW GEMINI (últimos 200):', rawAccum.substring(rawAccum.length - 200));
+    console.log('Longitud total:', rawAccum.length);
     var clean = rawAccum.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
 
     var inf;
