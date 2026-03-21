@@ -745,7 +745,7 @@ async function llamarGemini(apiKey, promptSistema, partesUsuario, msgLoading) {
     body: JSON.stringify({
       system_instruction: { parts: [{ text: promptSistema }] },
       contents: [{ role: 'user', parts: partesUsuario }],
-      generationConfig: { temperature: 0.0, maxOutputTokens: 512, responseMimeType: 'application/json' }
+      generationConfig: { temperature: 0.0, maxOutputTokens: 256 }
     })
     });
     if (!resp.ok) {
@@ -808,7 +808,7 @@ async function revisarTexto() {
     var raw1 = await llamarGemini(apiKey, buildPromptConteo(), partes, 'Contando errores…');
     var conteo;
     try { conteo = parsearJSON(raw1); }
-    catch(e) { throw new Error('Error procesando la respuesta. Inténtalo de nuevo.'); }
+    catch(e) { throw new Error('Conteo: ' + e.message + ' >> ' + raw1.substring(0,120)); }
 
     // ── LLAMADAS 2, 3: ejemplos por categoría (solo si hay errores) ──
     var ejemplosGraves = [], ejemplosTildes = [], ejemplosAbrev = [];
