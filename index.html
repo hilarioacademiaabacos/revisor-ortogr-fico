@@ -765,14 +765,14 @@ async function revisarTexto() {
     : 'Analizando ortografía y abreviaturas…';
 
   try {
-    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=' + apiKey;
     var response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: buildPromptOrtografico() }] },
         contents: [{ role: 'user', parts: partes }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
+        generationConfig: { temperature: 0.1, maxOutputTokens: 16384 }
       })
     });
 
@@ -782,13 +782,30 @@ async function revisarTexto() {
       throw new Error('Error Gemini API (' + response.status + '): ' + errMsg);
     }
 
-    var data = await response.json();
-    if (!data.candidates || !data.candidates[0]) {
-      throw new Error('Gemini no devolvió respuesta válida.');
+    // Leer stream SSE completo
+    var reader = response.body.getReader();
+    var decoder = new TextDecoder();
+    var rawAccum = '';
+    while (true) {
+      var chunk = await reader.read();
+      if (chunk.done) break;
+      var lines = decoder.decode(chunk.value, { stream: true }).split('\n');
+      for (var li = 0; li < lines.length; li++) {
+        var line = lines[li].trim();
+        if (!line.startsWith('data:')) continue;
+        var jsonStr = line.slice(5).trim();
+        if (jsonStr === '[DONE]') break;
+        try {
+          var evt = JSON.parse(jsonStr);
+          if (evt.candidates && evt.candidates[0] && evt.candidates[0].content) {
+            evt.candidates[0].content.parts.forEach(function(p){ rawAccum += (p.text || ''); });
+          }
+        } catch(pe) { /* chunk parcial, ignorar */ }
+      }
     }
 
-    var raw = data.candidates[0].content.parts.map(function(p){ return p.text || ''; }).join('');
-    var clean = raw.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
+    if (!rawAccum) throw new Error('Gemini no devolvió respuesta válida.');
+    var clean = rawAccum.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
 
     var inf;
     try {
