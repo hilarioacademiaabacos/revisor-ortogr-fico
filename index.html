@@ -736,6 +736,18 @@ function buildPromptValoracion(fg, et, pt) {
 var informeTexto = '';
 
     // ── Función auxiliar: llamada a Gemini y devuelve texto ──
+function parsearJSON(raw) {
+  // Quitar markdown fences
+  var clean = raw.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+  // Intentar parsear directo
+  try { return JSON.parse(clean); } catch(e) {}
+  // Intentar extraer el objeto JSON del texto
+  var match = clean.match(/\{[\s\S]*\}/);
+  if (match) { return JSON.parse(match[0]); }
+  throw new Error('No se encontró JSON válido en: ' + clean.substring(0,80));
+}
+
+
 async function llamarGemini(apiKey, promptSistema, partesUsuario, msgLoading) {
     document.getElementById('loading-msg').textContent = msgLoading;
     var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
@@ -745,7 +757,7 @@ async function llamarGemini(apiKey, promptSistema, partesUsuario, msgLoading) {
     body: JSON.stringify({
       system_instruction: { parts: [{ text: promptSistema }] },
       contents: [{ role: 'user', parts: partesUsuario }],
-      generationConfig: { temperature: 0.0, maxOutputTokens: 256 }
+      generationConfig: { temperature: 0.0, maxOutputTokens: 1024 }
     })
     });
     if (!resp.ok) {
@@ -799,16 +811,13 @@ async function revisarTexto() {
 
   try {
 
-    function parsearJSON(raw) {
-      var clean = raw.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
-      return JSON.parse(clean);
-    }
+
 
     // ── LLAMADA 1: conteo general ──
     var raw1 = await llamarGemini(apiKey, buildPromptConteo(), partes, 'Contando errores…');
     var conteo;
     try { conteo = parsearJSON(raw1); }
-    catch(e) { throw new Error('Conteo: ' + e.message + ' >> ' + raw1.substring(0,120)); }
+    catch(e) { throw new Error('Error al analizar el texto. Inténtalo de nuevo.'); }
 
     // ── LLAMADAS 2, 3: ejemplos por categoría (solo si hay errores) ──
     var ejemplosGraves = [], ejemplosTildes = [], ejemplosAbrev = [];
