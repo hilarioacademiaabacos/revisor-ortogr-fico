@@ -1,983 +1,666 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Revisor Ortográfico — Academia Ábacos</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet">
-<style>
-:root {
-  --negro: #ffffff;
-  --gris-oscuro: #f5f3f0;
-  --gris-medio: #e8e4df;
-  --gris-borde: #d0ccc6;
-  --rojo: #c0392b;
-  --rojo-claro: #e74c3c;
-  --crema: #1a1a1a;
-  --texto: #2a2427;
-  --texto-suave: #666;
-  --verde: #2d7a3a;
-  --naranja: #c0640a;
-  --amarillo: #8a6e00;
-  --fondo: #faf8f5;
-  --fondo-card: #ffffff;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Revisor Ortográfico · Oposiciones Maestros Extremadura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f4f1ec; --surface: #ffffff; --surface-warm: #faf8f4;
+      --ink: #1c1a17; --ink-soft: #58534c; --ink-faint: #9b9590;
+      --accent: #c0392b; --accent-hover: #a93226;
+      --accent-light: #fdf0ee; --accent-mid: #e8c4bf;
+      --amber: #c47d0a; --amber-light: #fdf5e6;
+      --green: #1a6e45; --green-light: #e8f5ef;
+      --border: #e2ddd6; --border-strong: #cac4bc;
+      --radius: 10px;
+      --shadow: 0 1px 8px rgba(28,26,23,.07), 0 2px 20px rgba(28,26,23,.05);
+      --shadow-md: 0 4px 24px rgba(28,26,23,.11);
+    }
+    body { background:var(--bg); color:var(--ink); font-family:'DM Sans',sans-serif; font-size:15px; line-height:1.6; min-height:100vh; }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* HEADER */
+    header { background:var(--ink); padding:0 40px; height:64px; display:flex; align-items:center; gap:16px; position:sticky; top:0; z-index:100; }
+    .hicon { width:36px;height:36px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
+    .htitle { font-family:'Fraunces',serif; font-size:1.05rem; font-weight:600; color:#fff; }
+    .hsub { font-size:.72rem; color:#6b6560; margin-left:4px; font-weight:300; letter-spacing:.04em; }
+    .hspace { flex:1; }
+    .api-btn { font-size:.72rem; padding:5px 12px; border-radius:20px; border:1px solid #333; color:#6b6560; cursor:pointer; background:none; transition:all .2s; white-space:nowrap; }
+    .api-btn.set { border-color:#2e6645; color:#4caf7d; }
+    .api-btn:hover { border-color:#555; color:#aaa; }
 
-body {
-  background: var(--fondo);
-  color: var(--texto);
-  font-family: 'Source Serif 4', Georgia, serif;
-  min-height: 100vh;
-}
+    /* MAIN */
+    main { max-width:820px; margin:0 auto; padding:36px 24px 72px; }
 
-/* ── HEADER ── */
-header {
-  background: #ffffff;
-  border-bottom: 2px solid var(--rojo);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  padding: 0;
-}
-.header-inner {
-  max-width: 900px; margin: 0 auto;
-  padding: 20px 24px;
-  display: flex; align-items: center; gap: 20px;
-}
-.header-acento {
-  width: 4px; height: 48px;
-  background: var(--rojo);
-  flex-shrink: 0;
-}
-.header-logo {
-  font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
-  text-transform: uppercase; color: var(--rojo);
-  font-family: 'Source Serif 4', serif;
-}
-.header-titulo {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px; font-weight: 900;
-  color: var(--crema); line-height: 1.1;
-  margin-top: 3px;
-}
-.header-sub {
-  font-size: 11px; color: var(--texto-suave);
-  letter-spacing: 0.5px; margin-top: 3px;
-}
+    /* MODAL */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(28,26,23,.55); backdrop-filter:blur(4px); z-index:200; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:var(--surface); border-radius:14px; padding:36px 32px; width:100%; max-width:460px; box-shadow:var(--shadow-md); animation:slideUp .22s ease; }
+    @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .modal h2 { font-family:'Fraunces',serif; font-size:1.2rem; font-weight:600; margin-bottom:8px; }
+    .modal-desc { font-size:.83rem; color:var(--ink-soft); margin-bottom:20px; line-height:1.65; }
+    .modal-desc a { color:var(--accent); text-decoration:none; }
+    .modal-desc a:hover { text-decoration:underline; }
+    .modal-steps { font-size:.78rem; color:var(--ink-soft); background:var(--surface-warm); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:16px; line-height:1.8; }
+    .modal-steps strong { color:var(--ink); }
+    .inp-wrap { position:relative; margin-bottom:16px; }
+    .inp-wrap input { width:100%; padding:12px 44px 12px 14px; border:1px solid var(--border-strong); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.88rem; color:var(--ink); background:var(--surface-warm); outline:none; letter-spacing:.04em; transition:border .2s; }
+    .inp-wrap input:focus { border-color:var(--accent); }
+    .vis-btn { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px; color:var(--ink-faint); }
+    .modal-actions { display:flex; gap:10px; margin-bottom:14px; }
+    .modal-note { font-size:.74rem; color:var(--ink-faint); background:var(--surface-warm); border:1px solid var(--border); border-radius:6px; padding:10px 12px; line-height:1.5; }
 
-/* ── API KEY BANNER ── */
-.apikey-banner {
-  background: #f0ede8;
-  border-bottom: 1px solid var(--gris-borde);
-}
-.apikey-inner {
-  max-width: 900px; margin: 0 auto;
-  padding: 10px 24px;
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-}
-.apikey-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
-  text-transform: uppercase; color: #666; white-space: nowrap;
-}
-.apikey-wrap { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px; }
-.apikey-input {
-  flex: 1; background: #1a1a1a; border: 1px solid var(--gris-borde);
-  color: #ccc; padding: 6px 12px; font-family: monospace;
-  font-size: 12px; outline: none; border-radius: 2px;
-  transition: border-color 0.2s;
-}
-.apikey-input:focus { border-color: var(--rojo); }
-.apikey-input::placeholder { color: #aaa; }
-.apikey-toggle {
-  background: none; border: none; color: #888;
-  cursor: pointer; font-size: 14px; padding: 4px;
-  transition: color 0.2s; line-height: 1;
-}
-.apikey-toggle:hover { color: #999; }
-.apikey-status { font-size: 10px; letter-spacing: 1px; white-space: nowrap; }
-.apikey-status.ok { color: var(--verde); }
-.apikey-status.empty { color: #666; }
-.apikey-help {
-  font-size: 10px; color: #444; text-decoration: none;
-  letter-spacing: 0.5px; white-space: nowrap; transition: color 0.2s;
-}
-.apikey-help:hover { color: #888; }
+    /* PENALTY BAR */
+    .penalty-bar { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 24px; margin-bottom:28px; display:flex; gap:28px; flex-wrap:wrap; align-items:center; box-shadow:var(--shadow); }
+    .pi { display:flex; align-items:center; gap:8px; }
+    .pdot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .pdot.r{background:var(--accent)} .pdot.a{background:var(--amber)} .pdot.g{background:var(--ink-faint)}
+    .pi p { font-size:.8rem; color:var(--ink-soft); }
+    .pi strong { color:var(--ink); }
 
-/* ── MAIN ── */
-main {
-  max-width: 900px; margin: 0 auto;
-  padding: 32px 24px 60px;
-}
+    /* UPLOAD ZONE */
+    .upload-zone { background:var(--surface); border:2px dashed var(--border-strong); border-radius:var(--radius); padding:40px 24px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; margin-bottom:20px; position:relative; }
+    .upload-zone:hover,.upload-zone.dragover { border-color:var(--accent); background:var(--accent-light); }
+    .upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .upload-icon { font-size:2.2rem; margin-bottom:10px; }
+    .upload-zone h3 { font-family:'Fraunces',serif; font-size:1rem; font-weight:600; margin-bottom:6px; }
+    .upload-zone p { font-size:.8rem; color:var(--ink-faint); }
+    .upload-fmts { display:inline-flex; gap:6px; margin-top:12px; }
+    .fmt { font-size:.7rem; padding:3px 9px; border-radius:20px; border:1px solid var(--border-strong); color:var(--ink-soft); background:var(--surface-warm); }
 
-/* ── INTRO ── */
-.intro-box {
-  background: var(--fondo-card);
-  border: 1px solid var(--gris-borde);
-  border-left: 3px solid var(--rojo);
-  padding: 18px 22px;
-  margin-bottom: 28px;
-  font-size: 13px; color: #aaa; line-height: 1.7;
-}
-.intro-box strong { color: var(--crema); }
+    /* PREVIEW */
+    #previewArea { display:none; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:20px; box-shadow:var(--shadow); }
+    .preview-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .preview-hd h4 { font-size:.85rem; font-weight:500; color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
+    .preview-pages { display:flex; gap:10px; flex-wrap:wrap; }
+    .preview-thumb { width:100px; height:130px; object-fit:cover; border-radius:6px; border:2.5px solid var(--border); cursor:pointer; transition:border-color .2s,transform .15s; }
+    .preview-thumb:hover { border-color:var(--accent); transform:scale(1.03); }
+    .preview-thumb.selected { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-light); }
+    .page-note { font-size:.75rem; color:var(--ink-faint); margin-top:10px; font-style:italic; }
 
-/* ── TEXTAREA ── */
-.area-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--texto-suave);
-  margin-bottom: 8px; display: block;
-}
-.examen-area {
-  width: 100%;
-  min-height: 280px;
-  background: #ffffff;
-  border: 1px solid var(--gris-borde);
-  color: var(--texto);
-  font-family: 'Source Serif 4', serif;
-  font-size: 14px; line-height: 1.8;
-  padding: 18px 20px;
-  resize: vertical;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.examen-area:focus { border-color: var(--rojo); }
-.examen-area::placeholder { color: #bbb; font-style: italic; }
-.contador {
-  font-size: 10px; color: #555; text-align: right;
-  margin-top: 6px; letter-spacing: 0.5px;
-}
+    /* NOTA ROW */
+    .nota-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:24px; }
+    .nota-row label { font-size:.83rem; color:var(--ink-soft); white-space:nowrap; }
+    .nota-row input { width:100px; padding:9px 14px; border:1px solid var(--border-strong); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.88rem; background:var(--surface); color:var(--ink); outline:none; transition:border .2s; }
+    .nota-row input:focus { border-color:var(--accent); }
+    .nota-row span { font-size:.75rem; color:var(--ink-faint); }
 
+    /* BUTTONS */
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:32px; }
+    .btn-primary { background:var(--accent); color:#fff; border:none; border-radius:var(--radius); padding:13px 28px; font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background .2s,transform .1s; box-shadow:0 2px 8px rgba(192,57,43,.22); }
+    .btn-primary:hover { background:var(--accent-hover); }
+    .btn-primary:active { transform:scale(.98); }
+    .btn-primary:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+    .btn-secondary { background:transparent; color:var(--ink-soft); border:1px solid var(--border-strong); border-radius:var(--radius); padding:13px 20px; font-family:'DM Sans',sans-serif; font-size:.86rem; cursor:pointer; transition:background .2s,color .2s; }
+    .btn-secondary:hover { background:var(--border); color:var(--ink); }
 
-/* ── TABS INPUT ── */
-.tabs-input {
-  display: flex; gap: 0;
-  margin-bottom: 0;
-  border-bottom: 2px solid var(--gris-borde);
-}
-.tab-btn {
-  background: none; border: none;
-  padding: 10px 22px;
-  font-family: 'Source Serif 4', serif;
-  font-size: 12px; font-weight: 600;
-  letter-spacing: 0.8px; text-transform: uppercase;
-  color: var(--texto-suave); cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: all 0.2s;
-}
-.tab-btn.activo {
-  color: var(--rojo);
-  border-bottom-color: var(--rojo);
-}
-.tab-btn:hover:not(.activo) { color: var(--texto); }
+    /* LOADING */
+    #loadingState { display:none; align-items:center; gap:14px; padding:22px 24px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:28px; box-shadow:var(--shadow); }
+    .spinner { width:22px; height:22px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .75s linear infinite; flex-shrink:0; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    #loadingMsg { font-size:.86rem; color:var(--ink-soft); font-style:italic; }
 
-.tab-panel { display: none; margin-top: 16px; }
-.tab-panel.activo { display: block; }
+    /* ERROR */
+    #errorState { display:none; background:var(--accent-light); border:1px solid var(--accent-mid); border-radius:var(--radius); padding:18px 22px; margin-bottom:24px; font-size:.86rem; color:var(--accent); line-height:1.7; }
 
-/* ── ZONA SUBIDA ── */
-.drop-zona {
-  border: 2px dashed var(--gris-borde);
-  background: var(--fondo-card);
-  padding: 40px 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-}
-.drop-zona:hover, .drop-zona.drag-over {
-  border-color: var(--rojo);
-  background: #fff5f5;
-}
-.drop-zona input[type=file] {
-  position: absolute; inset: 0;
-  opacity: 0; cursor: pointer; width: 100%; height: 100%;
-}
-.drop-icono { font-size: 36px; margin-bottom: 10px; }
-.drop-titulo {
-  font-family: 'Playfair Display', serif;
-  font-size: 16px; font-weight: 700;
-  color: var(--texto); margin-bottom: 6px;
-}
-.drop-sub { font-size: 12px; color: var(--texto-suave); line-height: 1.6; }
-.drop-formatos {
-  display: inline-flex; gap: 8px; margin-top: 12px;
-  flex-wrap: wrap; justify-content: center;
-}
-.fmt-badge {
-  font-size: 10px; font-weight: 700; letter-spacing: 1px;
-  padding: 3px 10px; border-radius: 2px;
-  background: var(--gris-medio); color: var(--texto-suave);
-  text-transform: uppercase;
-}
+    /* RESULTS */
+    .score-banner { border-radius:var(--radius); padding:22px 26px; margin-bottom:22px; display:flex; align-items:center; gap:22px; flex-wrap:wrap; box-shadow:var(--shadow-md); }
+    .score-banner.excellent { background:var(--green-light); border:1.5px solid #a8d5bc; }
+    .score-banner.good      { background:var(--amber-light); border:1.5px solid #f0c97a; }
+    .score-banner.poor      { background:var(--accent-light); border:1.5px solid var(--accent-mid); }
+    .score-circle { width:70px; height:70px; border-radius:50%; border:2.5px solid; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; }
+    .score-circle.excellent{border-color:var(--green);color:var(--green)}
+    .score-circle.good{border-color:var(--amber);color:var(--amber)}
+    .score-circle.poor{border-color:var(--accent);color:var(--accent)}
+    .snumber { font-family:'Fraunces',serif; font-size:1.45rem; font-weight:700; line-height:1; }
+    .slbl { font-size:.6rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
+    .sinfo h2 { font-family:'Fraunces',serif; font-size:1.1rem; font-weight:600; margin-bottom:4px; }
+    .scalc { font-size:.79rem; color:var(--ink-soft); margin-top:4px; }
+    .schips { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .chip { font-size:.75rem; padding:4px 10px; border-radius:20px; background:rgba(255,255,255,.65); border:1px solid rgba(0,0,0,.07); color:var(--ink-soft); }
+    .chip strong { color:var(--ink); }
 
-/* ── PREVIEW ARCHIVO ── */
-.archivo-preview {
-  display: none;
-  background: var(--fondo-card);
-  border: 1px solid var(--gris-borde);
-  border-left: 3px solid var(--verde);
-  padding: 12px 16px;
-  margin-top: 12px;
-  display: none; align-items: center; gap: 12px;
-}
-.archivo-preview.visible { display: flex; }
-.archivo-icono { font-size: 24px; flex-shrink: 0; }
-.archivo-info { flex: 1; }
-.archivo-nombre { font-size: 13px; color: var(--texto); font-weight: 600; }
-.archivo-meta { font-size: 11px; color: var(--texto-suave); margin-top: 2px; }
-.archivo-quitar {
-  background: none; border: none; color: var(--texto-suave);
-  cursor: pointer; font-size: 18px; padding: 4px;
-  transition: color 0.2s; line-height: 1;
-}
-.archivo-quitar:hover { color: var(--rojo); }
+    .error-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px; box-shadow:var(--shadow); overflow:hidden; }
+    .esh { padding:14px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+    .esh h3 { font-family:'Fraunces',serif; font-size:.96rem; font-weight:600; flex:1; }
+    .sb { font-size:.7rem; font-weight:500; padding:4px 10px; border-radius:20px; white-space:nowrap; }
+    .sb.r{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-mid)}
+    .sb.a{background:var(--amber-light);color:var(--amber);border:1px solid #f0c97a}
+    .sb.g{background:var(--green-light);color:var(--green);border:1px solid #a8d5bc}
+    .sb.p{background:var(--surface-warm);color:var(--ink-soft);border:1px solid var(--border)}
+    .no-errors { padding:18px 20px; font-size:.84rem; color:var(--green); display:flex; gap:8px; align-items:center; }
 
-/* ── MINIATURAS MÚLTIPLES ── */
-.miniaturas {
-  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;
-}
-.miniatura {
-  position: relative; width: 80px; height: 80px;
-  border: 1px solid var(--gris-borde); overflow: hidden;
-  background: var(--gris-medio);
-}
-.miniatura img { width: 100%; height: 100%; object-fit: cover; }
-.miniatura-pdf {
-  width: 80px; height: 80px;
-  background: var(--gris-medio); border: 1px solid var(--gris-borde);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  font-size: 10px; color: var(--texto-suave);
-  text-align: center; gap: 4px;
-}
-.miniatura-quitar {
-  position: absolute; top: 2px; right: 2px;
-  background: rgba(192,57,43,0.85); color: white;
-  border: none; cursor: pointer; border-radius: 50%;
-  width: 18px; height: 18px; font-size: 10px;
-  display: flex; align-items: center; justify-content: center;
-  line-height: 1;
-}
+    table.et { width:100%; border-collapse:collapse; }
+    table.et th { text-align:left; font-size:.7rem; font-weight:500; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); padding:9px 20px 7px; border-bottom:1px solid var(--border); background:var(--surface-warm); }
+    table.et td { padding:11px 20px; font-size:.83rem; border-bottom:1px solid var(--border); vertical-align:top; }
+    table.et tr:last-child td { border-bottom:none; }
+    table.et tr:hover td { background:var(--surface-warm); }
+    .ww { font-family:'Courier New',monospace; font-size:.8rem; background:#fde8e6; color:var(--accent); padding:2px 6px; border-radius:4px; text-decoration:line-through; }
+    .wr { font-family:'Courier New',monospace; font-size:.8rem; background:var(--green-light); color:var(--green); padding:2px 6px; border-radius:4px; }
+    .ed { color:var(--ink-soft); font-size:.8rem; }
+    .extras { padding:10px 20px; font-size:.76rem; color:var(--ink-faint); font-style:italic; border-top:1px dashed var(--border); }
 
-/* ── BOTÓN ── */
-.btn-revisar {
-  margin-top: 20px;
-  background: var(--rojo);
-  color: #fff;
-  border: none; cursor: pointer;
-  font-family: 'Source Serif 4', serif;
-  font-size: 13px; font-weight: 600;
-  letter-spacing: 1px;
-  padding: 14px 36px;
-  transition: background 0.2s, transform 0.1s;
-  display: flex; align-items: center; gap: 10px;
-}
-.btn-revisar:hover:not(:disabled) { background: var(--rojo-claro); }
-.btn-revisar:active:not(:disabled) { transform: scale(0.98); }
-.btn-revisar:disabled { opacity: 0.5; cursor: not-allowed; }
+    .val-card { background:var(--ink); color:#f4f1ec; border-radius:var(--radius); padding:26px 28px; margin-top:22px; box-shadow:var(--shadow-md); }
+    .val-card h3 { font-family:'Fraunces',serif; font-size:1rem; font-weight:600; color:#fff; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+    .val-text { font-size:.88rem; line-height:1.78; color:#c8c2ba; white-space:pre-wrap; }
 
-/* ── LOADING ── */
-.loading {
-  display: none;
-  margin-top: 28px;
-  align-items: center; gap: 14px;
-  color: var(--texto-suave); font-size: 13px;
-}
-.loading.visible { display: flex; }
-.spinner {
-  width: 20px; height: 20px;
-  border: 2px solid var(--gris-borde);
-  border-top-color: var(--rojo);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+    .transc-card { background:var(--surface-warm); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:22px; overflow:hidden; box-shadow:var(--shadow); }
+    .transc-hd { padding:14px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
+    .transc-hd h3 { font-family:'Fraunces',serif; font-size:.94rem; font-weight:600; flex:1; }
+    .tarrow { font-size:.8rem; color:var(--ink-faint); transition:transform .2s; }
+    .tarrow.open { transform:rotate(180deg); }
+    .transc-body { display:none; padding:18px 20px; font-size:.84rem; line-height:1.75; color:var(--ink-soft); white-space:pre-wrap; max-height:300px; overflow-y:auto; }
+    .transc-body.open { display:block; }
 
-/* ── ERROR ── */
-.error-msg {
-  display: none; margin-top: 16px;
-  background: #1a0a0a; border: 1px solid #5c1a1a;
-  color: #e57373; padding: 12px 16px; font-size: 13px;
-}
-.error-msg.visible { display: block; }
-
-/* ── RESULTADO ── */
-.resultado {
-  display: none; margin-top: 36px;
-}
-.resultado.visible { display: block; }
-
-.resultado-cabecera {
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 12px;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--gris-borde);
-}
-.resultado-titulo {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px; font-weight: 700; color: var(--crema);
-}
-.badge-global {
-  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
-  text-transform: uppercase; padding: 5px 14px;
-  border-radius: 2px;
-}
-.badge-limpio { background: #1a3a1a; color: var(--verde); border: 1px solid var(--verde); }
-.badge-leve { background: #2a2a0a; color: var(--amarillo); border: 1px solid var(--amarillo); }
-.badge-moderado { background: #2a1a0a; color: var(--naranja); border: 1px solid var(--naranja); }
-.badge-grave { background: #1a0a0a; color: var(--rojo-claro); border: 1px solid var(--rojo-claro); }
-
-/* ── RESUMEN PENALIZACIONES ── */
-.resumen-pen {
-  display: flex; gap: 16px; flex-wrap: wrap;
-  margin-bottom: 24px;
-}
-.pen-card {
-  flex: 1; min-width: 140px;
-  background: var(--fondo-card);
-  border: 1px solid var(--gris-borde);
-  padding: 16px; text-align: center;
-}
-.pen-card-num {
-  font-family: 'Playfair Display', serif;
-  font-size: 32px; font-weight: 900; margin-bottom: 4px;
-}
-.pen-card-num.verde { color: var(--verde); }
-.pen-card-num.amarillo { color: var(--amarillo); }
-.pen-card-num.naranja { color: var(--naranja); }
-.pen-card-num.rojo { color: var(--rojo); }
-.pen-card-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; color: var(--texto-suave);
-  line-height: 1.3;
-}
-
-/* ── SECCIONES ERRORES ── */
-.seccion-errores { margin-bottom: 32px; }
-.seccion-titulo-err {
-  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
-  text-transform: uppercase; color: var(--texto-suave);
-  margin-bottom: 16px; padding-bottom: 8px;
-  border-bottom: 1px solid var(--gris-medio);
-}
-.error-item {
-  display: flex; gap: 16px; margin-bottom: 16px;
-  background: var(--fondo-card); border: 1px solid var(--gris-borde);
-  padding: 14px 18px;
-}
-.error-tipo {
-  font-size: 9px; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; padding: 3px 8px;
-  border-radius: 2px; align-self: flex-start;
-  margin-top: 3px;
-}
-.tipo-falta { background: #1a0a0a; color: var(--rojo-claro); border: 1px solid #5c1a1a; }
-.tipo-tilde { background: #2a1a0a; color: var(--naranja); border: 1px solid #5c3c1a; }
-.tipo-abrev { background: #0a1a2a; color: #4dabf7; border: 1px solid #1a3c5c; }
-
-.error-contenido { flex: 1; }
-.error-descripcion { font-size: 14px; font-weight: 600; color: var(--crema); margin-bottom: 4px; }
-.error-cita { font-size: 13px; color: var(--texto-suave); font-style: italic; margin-bottom: 6px; }
-.error-correcto { font-size: 13px; color: var(--verde); font-weight: 600; }
-
-.ok-item { border-left: 3px solid var(--verde); background: #f8fff8; }
-
-/* ── VALORACIÓN FINAL ── */
-.valoracion-final {
-  background: #f0ede8; border: 1px solid var(--gris-borde);
-  padding: 24px; margin-top: 40px;
-}
-.valoracion-titulo {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px; font-weight: 700; margin-bottom: 12px;
-}
-.valoracion-texto {
-  font-size: 15px; line-height: 1.7; color: var(--texto);
-}
-
-/* ── ACCIONES ── */
-.acciones-resultado {
-  margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap;
-}
-.btn-accion {
-  padding: 12px 24px; font-size: 12px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 1px;
-  cursor: pointer; border: 1px solid var(--gris-borde);
-  background: white; color: var(--texto);
-  transition: all 0.2s;
-}
-.btn-accion:hover { background: var(--gris-oscuro); }
-.btn-accion.prim { background: var(--crema); color: white; border-color: var(--crema); }
-.btn-accion.prim:hover { background: #000; }
-
-@media (max-width: 600px) {
-  .header-inner { padding: 16px; }
-  main { padding: 20px 16px; }
-  .resumen-pen { gap: 10px; }
-  .pen-card { padding: 12px; min-width: 120px; }
-}
-</style>
+    @media(max-width:600px){
+      header{padding:0 18px} main{padding:24px 14px 56px}
+      table.et th:nth-child(3),table.et td:nth-child(3){display:none}
+      .score-banner{flex-direction:column;align-items:flex-start;gap:14px}
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="header-inner">
-    <div class="header-acento"></div>
-    <div>
-      <div class="header-logo">Academia Ábacos</div>
-      <h1 class="header-titulo">Revisor Ortográfico de Oposiciones</h1>
-      <div class="header-sub">Herramienta de análisis para el Cuerpo de Maestros</div>
+<!-- MODAL CLAVE API -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>🔑 Clave API de Google Gemini</h2>
+    <p class="modal-desc">
+      Necesitas una clave personal gratuita de Google AI Studio para usar este corrector.
+    </p>
+    <div class="modal-steps">
+      <strong>Cómo obtenerla (gratis, 1 minuto):</strong><br>
+      1. Ve a <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a><br>
+      2. Haz clic en <em>"Create API key"</em><br>
+      3. Copia la clave y pégala aquí abajo
     </div>
-  </div>
-</header>
-
-<div class="apikey-banner">
-  <div class="apikey-inner">
-    <span class="apikey-label">Gemini API Key:</span>
-    <div class="apikey-wrap">
-      <input type="password" id="gemini-apikey" class="apikey-input"
-        placeholder="Introduce tu API Key aquí..." oninput="actualizarEstadoKey()">
-      <button class="apikey-toggle" id="btn-toggle-key" onclick="toggleVerKey()">👁</button>
+    <div class="inp-wrap">
+      <input type="password" id="apiKeyInput" placeholder="AIza…" autocomplete="off" />
+      <button class="vis-btn" onclick="toggleVis()" title="Mostrar/ocultar">👁</button>
     </div>
-    <div id="apikey-status" class="apikey-status empty">Sin clave</div>
-    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="apikey-help">¿Dónde consigo una?</a>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="guardarKey()" style="flex:1">Guardar y continuar</button>
+      <button class="btn-secondary" id="btnCancelarModal" onclick="cerrarModal()">Cancelar</button>
+    </div>
+    <div class="modal-note">
+      ⚠️ Tu clave se guarda solo en la memoria de esta pestaña. Al cerrar el navegador tendrás que volver a introducirla. No la compartas con nadie.
+    </div>
   </div>
 </div>
 
+<!-- HEADER -->
+<header>
+  <div class="hicon">📝</div>
+  <span class="htitle">Revisor Ortográfico</span>
+  <span class="hsub">Oposiciones · Cuerpo de Maestros · Extremadura</span>
+  <div class="hspace"></div>
+  <button class="api-btn" id="apiBtnHdr" onclick="abrirModal()">🔑 Sin clave API</button>
+</header>
+
 <main>
-  <div class="intro-box">
-    <strong>Instrucciones:</strong> Esta herramienta utiliza inteligencia artificial (Gemini 2.0 Flash) para detectar faltas de ortografía, errores de acentuación y abreviaturas incorrectas siguiendo los criterios de corrección de oposiciones de Extremadura.
+
+  <!-- Criterios -->
+  <div class="penalty-bar">
+    <div class="pi"><div class="pdot r"></div><p><strong>Falta grave</strong> → −0,5 pts</p></div>
+    <div class="pi"><div class="pdot a"></div><p><strong>3 errores de tilde</strong> → −0,5 pts</p></div>
+    <div class="pi"><div class="pdot g"></div><p>Nota final <strong>nunca negativa</strong></p></div>
   </div>
 
-  <div class="tabs-input">
-    <button class="tab-btn activo" id="tab-texto" onclick="cambiarTab('texto')">Pegar texto</button>
-    <button class="tab-btn" id="tab-archivo" onclick="cambiarTab('archivo')">Subir imagen/PDF</button>
-  </div>
-
-  <div id="panel-texto" class="tab-panel activo">
-    <label class="area-label">Texto del examen</label>
-    <textarea id="texto-examen" class="examen-area"
-      placeholder="Pega aquí el texto transcrito de tu examen..."
-      oninput="actualizarContador()"></textarea>
-    <div class="contador" id="contador-palabras">0 palabras</div>
-  </div>
-
-  <div id="panel-archivo" class="tab-panel">
-    <div class="drop-zona" id="drop-zona"
-      ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropArchivo(event)">
-      <input type="file" id="input-archivo" accept="image/*,.pdf"
-        multiple onchange="seleccionarArchivos(this.files)">
-      <div class="drop-icono">📄</div>
-      <div class="drop-titulo">Arrastra aquí el examen manuscrito</div>
-      <div class="drop-sub">
-        o haz clic para seleccionar archivo<br>
-        Puedes subir <strong>varias imágenes</strong> (una por hoja) o un <strong>PDF escaneado</strong>
-      </div>
-      <div class="drop-formatos">
-        <span class="fmt-badge">JPG</span>
-        <span class="fmt-badge">PNG</span>
-        <span class="fmt-badge">WEBP</span>
-        <span class="fmt-badge">PDF</span>
-      </div>
+  <!-- Upload -->
+  <div class="upload-zone" id="uploadZone"
+       ondragover="onDragOver(event)" ondragleave="onDragLeave()" ondrop="onDrop(event)">
+    <input type="file" id="fileInput" accept="image/*,.pdf" onchange="onFileSelected(event)" />
+    <div class="upload-icon">📄</div>
+    <h3>Sube el examen manuscrito</h3>
+    <p>Arrastra el archivo aquí o haz clic para buscarlo</p>
+    <div class="upload-fmts">
+      <span class="fmt">JPG</span>
+      <span class="fmt">PNG</span>
+      <span class="fmt">PDF</span>
     </div>
-    <div class="miniaturas" id="miniaturas"></div>
   </div>
 
-  <button class="btn-revisar" id="btn-revisar" onclick="revisarTexto()">
-    <span>🔍</span> Revisar ortografía
-  </button>
+  <!-- Preview páginas -->
+  <div id="previewArea">
+    <div class="preview-hd">
+      <h4>📄 <span id="previewTitle">Páginas detectadas</span></h4>
+      <button class="btn-secondary" onclick="quitarArchivo()" style="font-size:.78rem;padding:6px 12px">✕ Quitar</button>
+    </div>
+    <div class="preview-pages" id="previewPages"></div>
+    <p class="page-note" id="pageNote"></p>
+  </div>
 
-  <div class="loading" id="loading">
+  <!-- Nota de partida -->
+  <div class="nota-row">
+    <label>Nota de partida (opcional):</label>
+    <input type="number" id="notaPartida" min="0" max="10" step="0.01" placeholder="ej. 7,50" />
+    <span>Si la indicas, calculamos la nota final tras penalizaciones.</span>
+  </div>
+
+  <!-- Acciones -->
+  <div class="actions">
+    <button class="btn-primary" id="btnAnalizar" onclick="analizarExamen()">🔍 Analizar examen</button>
+    <button class="btn-secondary" onclick="limpiarTodo()">Limpiar todo</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loadingState">
     <div class="spinner"></div>
-    <span id="loading-msg">Analizando el texto…</span>
+    <p id="loadingMsg">Procesando…</p>
   </div>
 
-  <div class="error-msg" id="error-msg"></div>
+  <!-- Error -->
+  <div id="errorState"></div>
 
-  <!-- RESULTADO -->
-  <div class="resultado" id="resultado">
+  <!-- Resultados -->
+  <div id="results"></div>
 
-    <div class="resultado-cabecera">
-      <div class="resultado-titulo">Informe de revisión ortográfica</div>
-      <div class="badge-global" id="badge-global"></div>
-    </div>
-
-    <!-- Tarjetas resumen -->
-    <div class="resumen-pen" id="resumen-pen"></div>
-
-    <!-- Errores graves -->
-    <div class="seccion-errores" id="sec-graves" style="display:none">
-      <div class="seccion-titulo-err">⛔ Faltas ortográficas graves</div>
-      <div id="lista-graves"></div>
-    </div>
-
-    <!-- Errores de tilde -->
-    <div class="seccion-errores" id="sec-tildes" style="display:none">
-      <div class="seccion-titulo-err">◌́ Errores de acentuación</div>
-      <div id="lista-tildes"></div>
-    </div>
-
-    <!-- Errores de abreviatura -->
-    <div class="seccion-errores" id="sec-abrev" style="display:none">
-      <div class="seccion-titulo-err">✎ Abreviaturas y siglas incorrectas</div>
-      <div id="lista-abrev"></div>
-    </div>
-
-    <!-- Sin errores -->
-    <div id="sec-ok" style="display:none">
-      <div class="error-item ok-item">
-        <div class="error-contenido">
-          <div class="error-descripcion" style="color:var(--verde)">
-            ✓ No se han detectado errores ortográficos, de acentuación ni de abreviaturas reseñables.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Valoración final -->
-    <div class="valoracion-final" id="valoracion-final" style="display:none">
-      <div class="valoracion-titulo">Valoración final</div>
-      <div class="valoracion-texto" id="valoracion-texto"></div>
-    </div>
-
-    <!-- Acciones -->
-    <div class="acciones-resultado">
-      <button class="btn-accion prim" onclick="copiarInforme()">📋 Copiar informe</button>
-      <button class="btn-accion" onclick="nuevoTexto()">↩ Revisar otro texto</button>
-    </div>
-
-  </div>
 </main>
 
 <script>
-// ═══════════════════════════════════════════
-// API KEY
-// ═══════════════════════════════════════════
-function actualizarEstadoKey() {
-  var val = document.getElementById('gemini-apikey').value.trim();
-  var st = document.getElementById('apikey-status');
-  if (val.length > 10) {
-    st.textContent = '✓ Clave introducida';
-    st.className = 'apikey-status ok';
-  } else {
-    st.textContent = 'Sin clave';
-    st.className = 'apikey-status empty';
-  }
-}
-function toggleVerKey() {
-  var inp = document.getElementById('gemini-apikey');
-  var btn = document.getElementById('btn-toggle-key');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
-}
-
-// ═══════════════════════════════════════════
-// TABS Y ARCHIVOS
-// ═══════════════════════════════════════════
-var tabActual = 'texto';
-var archivosSeleccionados = []; // [{file, tipo, b64, mime}]
-
-function cambiarTab(tab) {
-  tabActual = tab;
-  ['texto','archivo'].forEach(function(t) {
-    document.getElementById('tab-' + t).classList.toggle('activo', t === tab);
-    document.getElementById('panel-' + t).classList.toggle('activo', t === tab);
-  });
-}
-
-function dragOver(e) {
-  e.preventDefault();
-  document.getElementById('drop-zona').classList.add('drag-over');
-}
-function dragLeave(e) {
-  document.getElementById('drop-zona').classList.remove('drag-over');
-}
-function dropArchivo(e) {
-  e.preventDefault();
-  document.getElementById('drop-zona').classList.remove('drag-over');
-  seleccionarArchivos(e.dataTransfer.files);
-}
-
-function seleccionarArchivos(files) {
-  if (!files || files.length === 0) return;
-  archivosSeleccionados = [];
-  document.getElementById('miniaturas').innerHTML = '';
-
-  var promises = Array.from(files).map(function(file) {
-    return new Promise(function(resolve) {
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        var b64 = e.target.result.split(',')[1];
-        var mime = file.type || 'application/octet-stream';
-        archivosSeleccionados.push({ file: file, b64: b64, mime: mime });
-
-        // Miniatura
-        var mini = document.createElement('div');
-        if (mime.startsWith('image/')) {
-          mini.className = 'miniatura';
-          mini.innerHTML = '<img src="' + e.target.result + '" alt="página">'
-            + '<button class="miniatura-quitar" onclick="quitarArchivo(' + (archivosSeleccionados.length-1) + ')">×</button>';
-        } else {
-          mini.className = 'miniatura-pdf';
-          mini.innerHTML = '📄<span>' + file.name.substring(0,12) + '</span>';
-        }
-        document.getElementById('miniaturas').appendChild(mini);
-        resolve();
-      };
-      reader.readAsDataURL(file);
-    });
-  });
-
-  Promise.all(promises).then(function() {
-    var n = archivosSeleccionados.length;
-    var zona = document.getElementById('drop-zona');
-    zona.querySelector('.drop-titulo').textContent = n + (n === 1 ? ' archivo listo' : ' archivos listos');
-  });
-}
-
-function quitarArchivo(idx) {
-  archivosSeleccionados.splice(idx, 1);
-  // Re-renderizar miniaturas
-  var minis = document.getElementById('miniaturas');
-  minis.innerHTML = '';
-  archivosSeleccionados.forEach(function(a, i) {
-    var mini = document.createElement('div');
-    if (a.mime.startsWith('image/')) {
-      mini.className = 'miniatura';
-      mini.innerHTML = '<img src="data:' + a.mime + ';base64,' + a.b64 + '" alt="página">'
-        + '<button class="miniatura-quitar" onclick="quitarArchivo(' + i + ')">×</button>';
-    } else {
-      mini.className = 'miniatura-pdf';
-      mini.innerHTML = '📄<span>' + a.file.name.substring(0,12) + '</span>';
-    }
-    minis.appendChild(mini);
-  });
-  if (archivosSeleccionados.length === 0) {
-    document.getElementById('drop-zona').querySelector('.drop-titulo').textContent = 'Arrastra aquí el examen manuscrito';
-  }
-}
-
-// ═══════════════════════════════════════════
-// CONTADOR
-// ═══════════════════════════════════════════
-function actualizarContador() {
-  var txt = document.getElementById('texto-examen').value.trim();
-  var palabras = txt ? txt.split(/\s+/).length : 0;
-  document.getElementById('contador-palabras').textContent = palabras + ' palabras';
-}
-
-// ═══════════════════════════════════════════
-// PROMPT
-// ═══════════════════════════════════════════
-function buildPromptConteo() {
-  return 'Cuenta errores ortográficos en este texto de oposiciones de maestros.\n'
-    + 'FALTAS GRAVES: errores léxicos(b/v,h,ll/y,g/j)|abrev sin punto|abrev sin espacio|ordinal sin punto volada|sigla con puntos|sigla+s|abrev informal.\n'
-    + 'TILDES: cualquier tilde omitida o incorrecta.\n'
-    + 'Devuelve SOLO este JSON (sin texto adicional, sin markdown):\n'
-    + '{"fg":0,"et":0,"fet":0.0,"pt":0.0,"vg":"limpio|leve|moderado|grave"}';
-}
-
-function buildPromptEjemplos(categoria) {
-  var desc = {
-    graves: 'FALTAS GRAVES (errores léxicos, abreviaturas mal formadas, siglas con puntos, ordinales sin punto volada)',
-    tildes: 'ERRORES DE TILDE (tildes omitidas o incorrectas)'
-  }[categoria];
-  return 'Del siguiente texto de oposiciones de maestros, lista los 5 ejemplos más representativos de: ' + desc + '.\n'
-    + 'Reglas: cita solo la palabra errónea (máx 3 palabras), descripción máx 4 palabras, corrección máx 3 palabras.\n'
-    + 'Si no hay errores de este tipo, devuelve items:[].\n'
-    + 'Devuelve SOLO este JSON sin markdown:\n'
-    + '{"items":[{"c":"palabra","d":"tipo error","ok":"correcto"}]}';
-}
-
-function buildPromptValoracion(fg, et, pt) {
-  return 'Eres un corrector de oposiciones de maestros en Extremadura. '
-    + 'El examen tiene ' + fg + ' faltas graves y ' + et + ' errores de tilde (penalización total: ' + pt + ' puntos). '
-    + 'Escribe 2 frases dirigidas al opositor de tú, tono cordial y constructivo, resumiendo el resultado. '
-    + 'Devuelve SOLO el texto, sin JSON, sin comillas, sin markdown.';
-}
-
-// ═══════════════════════════════════════════
-// REVISAR
-// ═══════════════════════════════════════════
-var informeTexto = '';
-
-function parsearJSON(raw) {
-  // Quitar markdown fences
-  var clean = raw.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-  // Intentar parsear directo
-  try { return JSON.parse(clean); } catch(e) {}
-  // Intentar extraer el objeto JSON del texto
-  var match = clean.match(/\{[\s\S]*\}/);
-  if (match) { 
-    try { return JSON.parse(match[0]); } catch(e2) {}
-  }
-  throw new Error('No se pudo interpretar la respuesta del modelo.');
-}
-
-
-async function llamarGemini(apiKey, promptSistema, partesUsuario, msgLoading) {
-    document.getElementById('loading-msg').textContent = msgLoading;
-    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
-    var resp = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: promptSistema }] },
-      contents: [{ role: 'user', parts: partesUsuario }],
-      generationConfig: { temperature: 0.0, maxOutputTokens: 1024 }
-    })
-    });
-    if (!resp.ok) {
-    var errData = await resp.json().catch(() => ({}));
-    throw new Error('Error Gemini API (' + resp.status + '): ' + ((errData.error && errData.error.message) || resp.statusText));
-    }
-    var data = await resp.json();
-    if (!data.candidates || !data.candidates[0]) throw new Error('Sin respuesta de Gemini.');
-    return data.candidates[0].content.parts.map(function(p){ return p.text||''; }).join('');
+  // PDF.js worker
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   }
 
-async function revisarTexto() {
-  var apiKey = document.getElementById('gemini-apikey').value.trim();
-  var errorEl = document.getElementById('error-msg');
-  errorEl.classList.remove('visible');
+  // ── Estado ───────────────────────────────────────────────────
+  let apiKey = '';
+  let paginas = [];        // [{ data: base64, mime: string, dataUrl: string }]
+  let seleccionadas = new Set();
 
-  if (!apiKey) {
-    errorEl.textContent = '⚠️ Introduce tu clave de API de Gemini.';
-    errorEl.classList.add('visible');
-    return;
+  const GEMINI_MODEL = 'gemini-2.0-flash';
+
+  // ── Modal API Key ────────────────────────────────────────────
+  window.addEventListener('load', abrirModal);
+
+  function abrirModal() {
+    document.getElementById('apiKeyInput').value = apiKey || '';
+    document.getElementById('btnCancelarModal').style.display = apiKey ? 'block' : 'none';
+    document.getElementById('modalOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('apiKeyInput').focus(), 120);
   }
-
-  // Validar según el tab activo
-  var partes = [];
-  if (tabActual === 'texto') {
-    var texto = document.getElementById('texto-examen').value.trim();
-    if (texto.length < 50) {
-      errorEl.textContent = '⚠️ El texto es demasiado corto. Pega el examen completo.';
-      errorEl.classList.add('visible');
+  function cerrarModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+  function guardarKey() {
+    const val = document.getElementById('apiKeyInput').value.trim();
+    if (!val || val.length < 20) {
+      alert('Introduce una clave válida. Debe empezar por "AIza…" y tener al menos 20 caracteres.');
       return;
     }
-    partes = [{ text: 'Analiza este texto:\n\n' + texto }];
-  } else {
-    if (archivosSeleccionados.length === 0) {
-      errorEl.textContent = '⚠️ Sube al menos una imagen o PDF del examen.';
-      errorEl.classList.add('visible');
-      return;
-    }
-    partes.push({ text: 'Analiza el texto manuscrito de este examen. Lee con atención toda la escritura a mano, incluyendo correcciones y tachaduras visibles. Identifica los errores ortográficos, de acentuación y de abreviaturas según las instrucciones.' });
-    archivosSeleccionados.forEach(function(a) {
-      partes.push({ inline_data: { mime_type: a.mime, data: a.b64 } });
-    });
+    apiKey = val;
+    const btn = document.getElementById('apiBtnHdr');
+    btn.textContent = '🔑 Clave configurada';
+    btn.classList.add('set');
+    cerrarModal();
+  }
+  function toggleVis() {
+    const inp = document.getElementById('apiKeyInput');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
   }
 
-  document.getElementById('btn-revisar').disabled = true;
-  document.getElementById('resultado').classList.remove('visible');
-  document.getElementById('loading').classList.add('visible');
-  document.getElementById('loading-msg').textContent = tabActual === 'archivo'
-    ? 'Leyendo el examen manuscrito…'
-    : 'Analizando ortografía y abreviaturas…';
+  // ── Drag & Drop ──────────────────────────────────────────────
+  function onDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragover'); }
+  function onDragLeave()  { document.getElementById('uploadZone').classList.remove('dragover'); }
+  function onDrop(e)      { e.preventDefault(); onDragLeave(); const f = e.dataTransfer.files[0]; if (f) procesarArchivo(f); }
+  function onFileSelected(e) { const f = e.target.files[0]; if (f) procesarArchivo(f); }
 
-  try {
-    // ── LLAMADA 1: conteo general ──
-    var raw1 = await llamarGemini(apiKey, buildPromptConteo(), partes, 'Contando errores…');
-    var conteo = parsearJSON(raw1);
+  // ── Procesar archivo ─────────────────────────────────────────
+  async function procesarArchivo(file) {
+    paginas = []; seleccionadas = new Set();
+    document.getElementById('previewPages').innerHTML = '';
+    document.getElementById('previewArea').style.display = 'none';
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('errorState').style.display = 'none';
 
-    // ── LLAMADAS 2, 3: ejemplos por categoría (solo si hay errores) ──
-    var ejemplosGraves = [], ejemplosTildes = [];
-    var partesTexto = tabActual === 'texto'
-      ? [{ text: document.getElementById('texto-examen').value.trim() }]
-      : partes;
-
-    if ((conteo.fg || 0) > 0) {
-      var r2 = await llamarGemini(apiKey, buildPromptEjemplos('graves'), partesTexto, 'Obteniendo ejemplos de faltas…');
-      try { ejemplosGraves = parsearJSON(r2).items || []; } catch(e) { console.warn('r2 parse fail:', e.message); }
-    }
-    if ((conteo.et || 0) > 0) {
-      var r3 = await llamarGemini(apiKey, buildPromptEjemplos('tildes'), partesTexto, 'Obteniendo ejemplos de tildes…');
-      try { ejemplosTildes = parsearJSON(r3).items || []; } catch(e) { console.warn('r3 parse fail:', e.message); }
-    }
-
-    // Llamada final: valoración en texto libre
-    var valoracionTxt = '';
+    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    setLoading(true, 'Procesando archivo…');
     try {
-      valoracionTxt = await llamarGemini(apiKey, buildPromptValoracion(conteo.fg||0, conteo.et||0, conteo.pt||0), partesTexto, 'Generando valoración…');
-      valoracionTxt = valoracionTxt.replace(/^```[\s\S]*?```$/gm,'').trim();
-    } catch(e) { valoracionTxt = ''; }
-
-    // Construir objeto final unificado
-    var inf = {
-      vg: conteo.vg || 'grave',
-      fg: conteo.fg || 0,
-      et: conteo.et || 0,
-      fet: conteo.fet || 0,
-      pt: conteo.pt || 0,
-      eg: ejemplosGraves,
-      etd: ejemplosTildes,
-      v: valoracionTxt
-    };
-
-    renderResultado(inf);
-
-  } catch(err) {
-    errorEl.textContent = '⚠️ Error: ' + err.message;
-    errorEl.classList.add('visible');
-  } finally {
-    document.getElementById('loading').classList.remove('visible');
-    document.getElementById('btn-revisar').disabled = false;
-  }
-}
-
-// ═══════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════
-function renderResultado(inf) {
-  // Badge global
-  var badge = document.getElementById('badge-global');
-  var vg = (inf.vg || '').toLowerCase();
-  if (vg.includes('limpio')) {
-    badge.textContent = '✓ Texto limpio'; badge.className = 'badge-global badge-limpio';
-  } else if (vg.includes('leve')) {
-    badge.textContent = '⚠ Errores leves'; badge.className = 'badge-global badge-leve';
-  } else if (vg.includes('moderado')) {
-    badge.textContent = '⚠ Errores moderados'; badge.className = 'badge-global badge-moderado';
-  } else {
-    badge.textContent = '⛔ Errores graves'; badge.className = 'badge-global badge-grave';
+      if (isPDF) await procesarPDF(file);
+      else        await procesarImagen(file);
+      mostrarPreview();
+    } catch(err) {
+      mostrarError('Error al procesar el archivo: ' + err.message);
+    }
+    setLoading(false);
   }
 
-  // Tarjetas resumen
-  var pen = parseFloat(inf.pt || 0);
-  var graves = parseInt(inf.fg || 0);
-  var numTildes = parseInt(inf.et || 0);
-  var falEqTilde = parseFloat(inf.fet || 0);
-
-  var colorPen = pen === 0 ? 'verde' : pen <= 0.5 ? 'amarillo' : pen <= 1 ? 'naranja' : 'rojo';
-
-  document.getElementById('resumen-pen').innerHTML =
-    '<div class="pen-card"><div class="pen-card-num ' + (graves > 0 ? 'rojo' : 'verde') + '">' + graves + '</div><div class="pen-card-label">Faltas<br>graves</div></div>'
-    + '<div class="pen-card"><div class="pen-card-num ' + (numTildes > 0 ? 'naranja' : 'verde') + '">' + numTildes + '</div><div class="pen-card-label">Errores de<br>acentuación</div></div>'
-    + '<div class="pen-card"><div class="pen-card-num ' + (falEqTilde > 0 ? 'amarillo' : 'verde') + '">' + falEqTilde.toFixed(1) + '</div><div class="pen-card-label">Faltas equiv.<br>por tildes</div></div>'
-    + '<div class="pen-card"><div class="pen-card-num ' + colorPen + '">−' + pen.toFixed(1) + '</div><div class="pen-card-label">Penalización<br>total (pts)</div></div>';
-
-  // Faltas graves
-  var arrGraves = inf.eg || [];
-  if (arrGraves.length > 0) {
-    document.getElementById('sec-graves').style.display = 'block';
-    document.getElementById('lista-graves').innerHTML = arrGraves.map(function(e) {
-      return '<div class="error-item">'
-        + '<span class="error-tipo tipo-falta">Falta</span>'
-        + '<div class="error-contenido">'
-        + '<div class="error-descripcion">' + (e.d||'') + '</div>'
-        + (e.c ? '<div class="error-cita">«' + e.c + '»</div>' : '')
-        + (e.ok ? '<div class="error-correcto">✓ Correcto: ' + e.ok + '</div>' : '')
-        + '</div></div>';
-    }).join('');
-  } else {
-    document.getElementById('sec-graves').style.display = 'none';
-  }
-
-  // Errores de tilde
-  var arrTildes = inf.etd || [];
-  if (arrTildes.length > 0) {
-    document.getElementById('sec-tildes').style.display = 'block';
-    document.getElementById('lista-tildes').innerHTML = arrTildes.map(function(e) {
-      return '<div class="error-item tilde">'
-        + '<span class="error-tipo tipo-tilde">Tilde</span>'
-        + '<div class="error-contenido">'
-        + '<div class="error-descripcion">' + (e.d||'') + '</div>'
-        + (e.c ? '<div class="error-cita">«' + e.c + '»</div>' : '')
-        + (e.ok ? '<div class="error-correcto">✓ Correcto: ' + e.ok + '</div>' : '')
-        + '</div></div>';
-    }).join('');
-  } else {
-    document.getElementById('sec-tildes').style.display = 'none';
-  }
-
-  // Sin errores
-  if (arrGraves.length === 0 && arrTildes.length === 0) {
-    document.getElementById('sec-ok').style.display = 'block';
-  } else {
-    document.getElementById('sec-ok').style.display = 'none';
-  }
-
-  // Valoración final
-  var valTxt = inf.v || '';
-  if (valTxt) {
-    document.getElementById('valoracion-final').style.display = 'block';
-    document.getElementById('valoracion-texto').textContent = valTxt;
-  } else {
-    document.getElementById('valoracion-final').style.display = 'none';
-  }
-
-  // Generar texto plano para copiar
-  informeTexto = generarTextoPlano(inf);
-
-  document.getElementById('resultado').classList.add('visible');
-  document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
-}
-
-// ═══════════════════════════════════════════
-// TEXTO PLANO
-// ═══════════════════════════════════════════
-function generarTextoPlano(inf) {
-  var t = 'INFORME DE REVISIÓN ORTOGRÁFICA — ACADEMIA ÁBACOS\n' + '='.repeat(40) + '\n\n';
-  t += 'Valoración: ' + (inf.vg || '') + '\n';
-  t += 'Faltas graves: ' + (inf.fg || 0) + '\n';
-  t += 'Errores de tilde: ' + (inf.et || 0) + ' (= ' + parseFloat(inf.fet || 0).toFixed(1) + ' faltas)\n';
-  t += 'Penalización total: −' + parseFloat(inf.pt || 0).toFixed(1) + ' pts\n\n';
-
-  var arrGraves = inf.eg || [];
-  if (arrGraves.length > 0) {
-    t += 'FALTAS GRAVES\n' + '─'.repeat(20) + '\n';
-    arrGraves.forEach(function(e, i) {
-      t += (i+1) + '. ' + (e.d || '') + '\n';
-      if (e.c) t += '   Cita: «' + e.c + '»\n';
-      if (e.ok) t += '   Correcto: ' + e.ok + '\n';
+  function procesarImagen(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => {
+        const dataUrl = e.target.result;
+        paginas.push({ data: dataUrl.split(',')[1], mime: file.type || 'image/jpeg', dataUrl });
+        res();
+      };
+      r.onerror = rej;
+      r.readAsDataURL(file);
     });
-    t += '\n';
   }
-  var arrTildes = inf.etd || [];
-  if (arrTildes.length > 0) {
-    t += 'ERRORES DE ACENTUACIÓN\n' + '─'.repeat(20) + '\n';
-    arrTildes.forEach(function(e, i) {
-      t += (i+1) + '. ' + (e.d || '') + '\n';
-      if (e.c) t += '   Cita: «' + e.c + '»\n';
-      if (e.ok) t += '   Correcto: ' + e.ok + '\n';
+
+  async function procesarPDF(file) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    for (let i = 1; i <= pdf.numPages; i++) {
+      setLoading(true, `Procesando PDF: página ${i} de ${pdf.numPages}…`);
+      const page = await pdf.getPage(i);
+      const vp = page.getViewport({ scale: 2.0 });
+      const canvas = document.createElement('canvas');
+      canvas.width = vp.width; canvas.height = vp.height;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      paginas.push({ data: dataUrl.split(',')[1], mime: 'image/jpeg', dataUrl });
+    }
+  }
+
+  function mostrarPreview() {
+    const container = document.getElementById('previewPages');
+    container.innerHTML = '';
+    paginas.forEach((p, idx) => {
+      const img = document.createElement('img');
+      img.src = p.dataUrl;
+      img.className = 'preview-thumb selected';
+      img.title = `Página ${idx + 1}`;
+      img.alt = `Página ${idx + 1}`;
+      seleccionadas.add(idx);
+      img.onclick = () => togglePag(idx, img);
+      container.appendChild(img);
     });
-    t += '\n';
+    document.getElementById('previewTitle').textContent =
+      paginas.length === 1 ? '1 imagen cargada' : `${paginas.length} páginas · selecciona las que quieres corregir`;
+    document.getElementById('pageNote').textContent =
+      paginas.length > 1 ? 'Las páginas resaltadas se enviarán al corrector. Clic para seleccionar/deseleccionar.' : '';
+    document.getElementById('previewArea').style.display = 'block';
   }
-  if (inf.v) t += 'VALORACIÓN FINAL\n' + inf.v + '\n';
-  return t;
-}
 
-// ═══════════════════════════════════════════
-// ACCIONES
-// ═══════════════════════════════════════════
-function copiarInforme() {
-  navigator.clipboard.writeText(informeTexto).then(function() {
-    var btn = document.querySelector('[onclick="copiarInforme()"]');
-    var orig = btn.textContent;
-    btn.textContent = '✅ Copiado';
-    setTimeout(function(){ btn.textContent = orig; }, 2000);
-  }).catch(function() { alert('No se pudo copiar automáticamente.'); });
-}
+  function togglePag(idx, img) {
+    if (seleccionadas.has(idx)) { seleccionadas.delete(idx); img.classList.remove('selected'); }
+    else                        { seleccionadas.add(idx);    img.classList.add('selected'); }
+  }
 
-function nuevoTexto() {
-  document.getElementById('texto-examen').value = '';
-  document.getElementById('contador-palabras').textContent = '0 palabras';
-  archivosSeleccionados = [];
-  document.getElementById('miniaturas').innerHTML = '';
-  document.getElementById('drop-zona').querySelector('.drop-titulo').textContent = 'Arrastra aquí el examen manuscrito';
-  document.getElementById('input-archivo').value = '';
-  document.getElementById('resultado').classList.remove('visible');
-  document.getElementById('error-msg').classList.remove('visible');
-  // Limpiar secciones para próxima vez
-  ['sec-graves','sec-tildes','sec-abrev','sec-ok','valoracion-final'].forEach(function(id){
-    document.getElementById(id).style.display = 'none';
-  });
-  document.getElementById('lista-graves').innerHTML = '';
-  document.getElementById('lista-tildes').innerHTML = '';
-  document.getElementById('lista-abrev').innerHTML = '';
-  document.getElementById('texto-examen').focus();
-}
+  function quitarArchivo() {
+    paginas = []; seleccionadas = new Set();
+    document.getElementById('previewArea').style.display = 'none';
+    document.getElementById('previewPages').innerHTML = '';
+    document.getElementById('fileInput').value = '';
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('errorState').style.display = 'none';
+  }
+  function limpiarTodo() { quitarArchivo(); document.getElementById('notaPartida').value = ''; }
+
+  // ── Prompt ───────────────────────────────────────────────────
+  const SYSTEM_TEXT = `Eres un corrector ortográfico experto especializado en exámenes de oposiciones al Cuerpo de Maestros de Educación Primaria en Extremadura. Tu función es:
+1. Leer el texto manuscrito de las imágenes adjuntas (pueden ser una o varias páginas de un examen).
+2. Detectar errores ortográficos, de acentuación y de abreviaturas en ese texto.
+
+REGLAS DE PENALIZACIÓN (criterios oficiales del Tribunal):
+- Cada falta ortográfica grave: −0,5 puntos sobre la nota final
+- Cada 3 errores de acentuación (tildes): equivalen a 1 falta (−0,5 puntos)
+- La nota final nunca puede ser negativa
+
+CATEGORÍAS DE ERRORES A DETECTAR:
+
+FALTAS GRAVES (−0,5p cada una):
+- Errores léxicos: confusión b/v, h, ll/y, g/j, c/s/z, y similares
+- Abreviatura sin punto de cierre: "pag" en lugar de "pág."
+- Abreviatura compleja sin espacio tras cada punto: "p.ej." → "p. ej."; "EE.UU." → "EE. UU."
+- Número ordinal sin punto antes de letra volada: "1º" → "1.º"; "2ª" → "2.ª"
+- Sigla con puntos entre letras: "D.N.I." → "DNI"; "L.O.M.L.O.E." → "LOMLOE"
+- Sigla con marca de plural: "ONGs" → "ONG"
+- Abreviatura no convencional: xq, tb, dnd, x, d (prohibidas en oposiciones)
+
+ERRORES DE ACENTUACIÓN (cada 3 = 1 falta):
+- Tilde omitida o incorrecta en cualquier palabra
+- Abreviatura que debería llevar tilde y no la lleva: "pag." → "pág."; "cod." → "cód."
+
+ABREVIATURAS CORRECTAS DE REFERENCIA (RAE / Extremadura):
+art./arts. | pág./págs. | núm./n.º | cap./caps. | sig./ss. | etc. | p. ej. | C. A./CC. AA. | R. D./RR. DD. | L. O./LL. OO. | U. D./UU. DD. | P. D./PP. DD. | admón.
+
+SIGLAS: invariables en escritura (ONG, no ONGs). Sin puntos entre letras (LOMLOE, DUA, TIC, DNI). Excepción: EE. UU. (con espacio, sin puntos entre letras de cada palabra).
+
+INSTRUCCIONES DE ANÁLISIS:
+- Detecta SOLO errores reales y objetivos. No inventes errores.
+- Si la letra manuscrita es ilegible en algún fragmento, ignóralo y trabaja solo con lo que puedas leer con seguridad.
+- Si no hay errores en una categoría, devuelve array vacío.
+- Para cada error: cita la palabra o expresión exacta, describe el error brevemente, indica la forma correcta.
+- Cuenta el total real de errores aunque no los listes todos.
+- Lista únicamente los 5 ejemplos más representativos de cada categoría. Si hay más, indícalo en "adicionales".
+
+TONO DE LA VALORACIÓN: Dirígete al opositor de tú, con tono cordial, directo y constructivo. Sin condescendencia. Sé específico sobre el impacto en la nota.
+
+RESPONDE ÚNICAMENTE con este JSON (sin texto adicional, sin bloques markdown):
+{
+  "transcripcion_breve": "<primeras 2-3 líneas del texto leído, para confirmar que la imagen es correcta>",
+  "faltas_graves": {
+    "total": <entero>,
+    "ejemplos": [{ "original": "...", "correcto": "...", "descripcion": "..." }],
+    "adicionales": <entero>
+  },
+  "errores_tilde": {
+    "total": <entero>,
+    "ejemplos": [{ "original": "...", "correcto": "...", "descripcion": "..." }],
+    "adicionales": <entero>
+  },
+  "penalizacion_total": <decimal >= 0>,
+  "calculo": "<N faltas × 0,5 + M grupos de 3 tildes × 0,5>",
+  "valoracion": "<párrafo cordial y constructivo al opositor, 3-5 frases>"
+}`;
+
+  // ── Analizar ─────────────────────────────────────────────────
+  async function analizarExamen() {
+    if (!apiKey) { abrirModal(); return; }
+
+    const idxs = Array.from(seleccionadas).sort((a, b) => a - b);
+    if (idxs.length === 0) {
+      mostrarError('Sube un archivo y selecciona al menos una página para analizar.');
+      return;
+    }
+
+    document.getElementById('btnAnalizar').disabled = true;
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('errorState').style.display = 'none';
+    setLoading(true, 'Enviando imágenes a Gemini…');
+
+    try {
+      // Construir partes para Gemini (multimodal)
+      // Gemini API: contents[].parts[] con { text } o { inlineData: { mimeType, data } }
+      const parts = [];
+
+      // Instrucción + prompt
+      parts.push({ text: SYSTEM_TEXT });
+      parts.push({ text: '\n\nAnaliza el texto manuscrito de las siguientes imágenes:' });
+
+      idxs.forEach((idx, i) => {
+        if (idxs.length > 1) parts.push({ text: `— Página ${i + 1} —` });
+        parts.push({
+          inlineData: {
+            mimeType: paginas[idx].mime,
+            data: paginas[idx].data
+          }
+        });
+      });
+
+      setLoading(true, 'Analizando el manuscrito… (puede tardar unos segundos)');
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts }],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 2048
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const msg = err.error?.message || `Error ${res.status}`;
+        if (res.status === 400 && msg.includes('API_KEY')) throw new Error('Clave API inválida. Compruébala en aistudio.google.com/apikey.');
+        if (res.status === 403) throw new Error('Clave API sin permisos o cuota agotada. Compruébala en aistudio.google.com.');
+        if (res.status === 429) throw new Error('Límite de peticiones alcanzado. Espera unos segundos e inténtalo de nuevo.');
+        throw new Error(msg);
+      }
+
+      const data = await res.json();
+
+      // Extraer texto de la respuesta Gemini
+      const raw = data?.candidates?.[0]?.content?.parts
+        ?.map(p => p.text || '').join('') || '';
+
+      if (!raw) throw new Error('Gemini no devolvió respuesta. Inténtalo de nuevo.');
+
+      // Limpiar posibles bloques markdown
+      const clean = raw.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+
+      let resultado;
+      try { resultado = JSON.parse(clean); }
+      catch {
+        // Intentar extraer JSON con regex por si hay texto extra
+        const match = clean.match(/\{[\s\S]*\}/);
+        if (match) {
+          try { resultado = JSON.parse(match[0]); }
+          catch { throw new Error('No se pudo interpretar la respuesta. Inténtalo de nuevo.'); }
+        } else {
+          throw new Error('Gemini no devolvió un JSON válido. Inténtalo de nuevo.');
+        }
+      }
+
+      mostrarResultados(resultado);
+
+    } catch(err) {
+      mostrarError(err.message);
+    } finally {
+      document.getElementById('btnAnalizar').disabled = false;
+      setLoading(false);
+    }
+  }
+
+  // ── Mostrar resultados ───────────────────────────────────────
+  function mostrarResultados(r) {
+    const notaPartidaVal = document.getElementById('notaPartida').value;
+    const notaPartida = notaPartidaVal !== '' ? parseFloat(notaPartidaVal) : null;
+    const pen = r.penalizacion_total || 0;
+    const notaFinal = notaPartida !== null ? Math.max(0, notaPartida - pen) : null;
+
+    const nivel = pen === 0 ? 'excellent' : pen <= 1 ? 'good' : 'poor';
+    const labelNivel = {
+      excellent: '✅ Sin penalizaciones ortográficas',
+      good:      '⚠️ Penalización leve',
+      poor:      '❌ Penalización significativa'
+    }[nivel];
+
+    const scoreInner = notaFinal !== null
+      ? `<span class="snumber">${notaFinal.toFixed(2).replace('.', ',')}</span><span class="slbl">nota final</span>`
+      : `<span style="font-size:1.5rem">${pen===0?'✓':pen<=1?'!':'✗'}</span>`;
+
+    const gt = Math.floor((r.errores_tilde?.total || 0) / 3);
+    const chips = [
+      `<span class="chip">🔴 Faltas graves: <strong>${r.faltas_graves?.total || 0}</strong></span>`,
+      `<span class="chip">🟡 Errores tilde: <strong>${r.errores_tilde?.total || 0}</strong></span>`,
+      `<span class="chip">📉 Penalización: <strong>−${pen.toFixed(2).replace('.', ',')}</strong></span>`,
+      ...(notaPartida !== null
+        ? [`<span class="chip">📝 Nota partida: <strong>${notaPartida.toFixed(2).replace('.', ',')}</strong></span>`]
+        : [])
+    ].join('');
+
+    const transcHtml = r.transcripcion_breve ? `
+      <div class="transc-card">
+        <div class="transc-hd" onclick="toggleTransc(this)">
+          <h3>📖 Texto detectado en la imagen</h3>
+          <span class="tarrow">▼</span>
+        </div>
+        <div class="transc-body">${esc(r.transcripcion_breve)}</div>
+      </div>` : '';
+
+    const bGraves = r.faltas_graves?.total === 0
+      ? `<span class="sb g">Sin faltas</span>`
+      : `<span class="sb r">${r.faltas_graves.total} falta${r.faltas_graves.total!==1?'s':''}</span>`;
+    const pGraves = (r.faltas_graves?.total || 0) > 0
+      ? `<span class="sb p">−${(r.faltas_graves.total * 0.5).toFixed(1).replace('.',',')} pts</span>` : '';
+
+    const bTildes = r.errores_tilde?.total === 0
+      ? `<span class="sb g">Sin errores</span>`
+      : `<span class="sb a">${r.errores_tilde.total} errores · ${gt} grupo${gt!==1?'s':''} de 3</span>`;
+    const pTildes = gt > 0
+      ? `<span class="sb p">−${(gt * 0.5).toFixed(1).replace('.',',')} pts</span>` : '';
+
+    document.getElementById('results').innerHTML = `
+      ${transcHtml}
+      <div class="score-banner ${nivel}">
+        <div class="score-circle ${nivel}">${scoreInner}</div>
+        <div class="sinfo">
+          <h2>${labelNivel}</h2>
+          <p class="scalc">${esc(r.calculo)}</p>
+          <div class="schips">${chips}</div>
+        </div>
+      </div>
+      <div class="error-section">
+        <div class="esh"><h3>🔴 Faltas ortográficas graves</h3>${bGraves}${pGraves}</div>
+        ${buildTabla(r.faltas_graves)}
+      </div>
+      <div class="error-section">
+        <div class="esh"><h3>🟡 Errores de acentuación</h3>${bTildes}${pTildes}</div>
+        ${buildTabla(r.errores_tilde)}
+      </div>
+      <div class="val-card">
+        <h3>💬 Valoración</h3>
+        <div class="val-text">${esc(r.valoracion)}</div>
+      </div>`;
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function buildTabla(sec) {
+    if (!sec || sec.total === 0)
+      return `<div class="no-errors">✅ Sin errores en esta categoría.</div>`;
+    const rows = (sec.ejemplos || []).map(e =>
+      `<tr>
+        <td><span class="ww">${esc(e.original)}</span></td>
+        <td><span class="wr">${esc(e.correcto)}</span></td>
+        <td class="ed">${esc(e.descripcion)}</td>
+      </tr>`
+    ).join('');
+    const extra = sec.adicionales > 0
+      ? `<div class="extras">+ ${sec.adicionales} error${sec.adicionales!==1?'es':''} adicional${sec.adicionales!==1?'es':''} no listado${sec.adicionales!==1?'s':''} (se muestran los 5 más representativos).</div>`
+      : '';
+    return `
+      <table class="et">
+        <thead><tr><th>Encontrado</th><th>Correcto</th><th>Descripción</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>${extra}`;
+  }
+
+  function toggleTransc(hd) {
+    const body = hd.nextElementSibling;
+    const open = body.classList.toggle('open');
+    hd.querySelector('.tarrow').classList.toggle('open', open);
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────
+  function setLoading(show, msg = '') {
+    document.getElementById('loadingState').style.display = show ? 'flex' : 'none';
+    if (msg) document.getElementById('loadingMsg').textContent = msg;
+  }
+  function mostrarError(msg) {
+    const el = document.getElementById('errorState');
+    el.innerHTML = '⚠️ ' + esc(msg);
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function esc(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 </script>
 </body>
 </html>
