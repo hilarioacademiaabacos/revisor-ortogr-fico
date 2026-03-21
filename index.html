@@ -767,50 +767,65 @@ async function revisarTexto() {
     : 'Analizando ortografía y abreviaturas…';
 
   try {
-    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=' + apiKey;
-    var response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: buildPromptOrtografico() }] },
-        contents: [{ role: 'user', parts: partes }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 16384 }
-      })
-    });
-
-    if (!response.ok) {
-      var errData = await response.json().catch(() => ({}));
-      var errMsg = (errData.error && errData.error.message) ? errData.error.message : response.statusText;
-      throw new Error('Error Gemini API (' + response.status + '): ' + errMsg);
-    }
-
-    // Leer stream SSE completo
-    var reader = response.body.getReader();
-    var decoder = new TextDecoder();
-    var rawAccum = '';
-    while (true) {
-      var chunk = await reader.read();
-      if (chunk.done) break;
-      var lines = decoder.decode(chunk.value, { stream: true }).split('\n');
-      for (var li = 0; li < lines.length; li++) {
-        var line = lines[li].trim();
-        if (!line.startsWith('data:')) continue;
-        var jsonStr = line.slice(5).trim();
-        if (jsonStr === '[DONE]') break;
-        try {
-          var evt = JSON.parse(jsonStr);
-          if (evt.candidates && evt.candidates[0] && evt.candidates[0].content) {
-            evt.candidates[0].content.parts.forEach(function(p){ rawAccum += (p.text || ''); });
-          }
-        } catch(pe) { /* chunk parcial, ignorar */ }
+    // ── Función auxiliar: llamada a Gemini y devuelve texto ──
+    async function llamarGemini(promptSistema, partesUsuario, msgLoading) {
+      document.getElementById('loading-msg').textContent = msgLoading;
+      var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
+      var resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: promptSistema }] },
+          contents: [{ role: 'user', parts: partesUsuario }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 1024 }
+        })
+      });
+      if (!resp.ok) {
+        var errData = await resp.json().catch(() => ({}));
+        throw new Error('Error Gemini API (' + resp.status + '): ' + ((errData.error && errData.error.message) || resp.statusText));
       }
+      var data = await resp.json();
+      if (!data.candidates || !data.candidates[0]) throw new Error('Sin respuesta de Gemini.');
+      return data.candidates[0].content.parts.map(function(p){ return p.text||''; }).join('');
     }
 
-    if (!rawAccum) throw new Error('Gemini no devolvió respuesta válida.');
-    console.log('LONGITUD:', rawAccum.length);
-    console.log('INICIO:', rawAccum.substring(0,100));
-    console.log('FINAL:', rawAccum.substring(rawAccum.length-150));
-    var clean = rawAccum.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
+    function parsearJSON(raw) {
+      var clean = raw.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
+      return JSON.parse(clean);
+    }
+
+    // ── LLAMADA 1: conteo general ──
+    var raw1 = await llamarGemini(buildPromptConteo(), partes, 'Contando errores…');
+    var conteo = parsearJSON(raw1);
+
+    // ── LLAMADAS 2, 3, 4: ejemplos por categoría (solo si hay errores) ──
+    var ejemplosGraves = [], ejemplosTildes = [], ejemplosAbrev = [];
+    var partesTexto = tabActual === 'texto'
+      ? [{ text: document.getElementById('texto-examen').value.trim() }]
+      : partes;
+
+    if ((conteo.fg || 0) > 0) {
+      var r2 = await llamarGemini(buildPromptEjemplos('graves'), partesTexto, 'Obteniendo ejemplos de faltas…');
+      try { ejemplosGraves = parsearJSON(r2).items || []; } catch(e) { ejemplosGraves = []; }
+    }
+    if ((conteo.et || 0) > 0) {
+      var r3 = await llamarGemini(buildPromptEjemplos('tildes'), partesTexto, 'Obteniendo ejemplos de tildes…');
+      try { ejemplosTildes = parsearJSON(r3).items || []; } catch(e) { ejemplosTildes = []; }
+    }
+
+    // Construir objeto final
+    var inf = {
+      vg: conteo.vg || 'Errores graves',
+      fg: conteo.fg || 0,
+      et: conteo.et || 0,
+      fet: conteo.fet || 0,
+      pt: conteo.pt || 0,
+      eg: ejemplosGraves,
+      etd: ejemplosTildes,
+      ea: ejemplosAbrev,
+      v: conteo.v || ''
+    };
+    var clean = JSON.stringify(inf);
 
     var inf;
     try {
