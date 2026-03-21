@@ -703,28 +703,54 @@ function actualizarContador() {
 // ═══════════════════════════════════════════
 // PROMPT
 // ═══════════════════════════════════════════
-function buildPromptOrtografico() {
+function buildPromptConteo() {
   return 'Corrector ortográfico experto oposiciones Maestros Extremadura.\n'
-    + 'TAREA: contar todos los errores pero listar SOLO LOS 5 MÁS REPRESENTATIVOS de cada categoría.\n'
-    + 'FALTAS GRAVES(-0.5p c/u): error léxico(b/v,h,ll/y,g/j)|abrev sin punto("pag"→"pág.")|abrev compleja sin espacio("p.ej."→"p. ej.")|ordinal sin punto antes volada("1º"→"1.º")|sigla con puntos("D.N.I."→"DNI")|sigla plural -s("ONGs"→"ONG")|abrev no convencional(xq,tb,dnd).\n'
-    + 'ERRORES TILDE(3=1 falta): tilde omitida/incorrecta.\n'
-    + 'REGLAS: cuenta el total real de cada tipo, pero en los arrays incluye MAX 10 ejemplos representativos.\n'
-    + 'NO inventes errores. Si no hay errores en una categoría, pon array vacío [].\n'
-    + 'RESPONDE SOLO JSON VÁLIDO SIN MARKDOWN. BIEN CERRADO.\n'
-    + '{"valoracion_global":"Texto limpio|Errores leves|Errores moderados|Errores graves",'
-    + '"faltas_graves":número_total_real,"errores_tilde_total":número_total_real,'
-    + '"faltas_equivalentes_tilde":decimal,"penalizacion_total":decimal,'
-    + '"errores_graves":[MAX 10 ejemplos: {"descripcion":"tipo error","cita":"palabra exacta","correccion":"forma correcta"}],'
-    + '"errores_tilde":[MAX 10 ejemplos: {"descripcion":"tipo error","cita":"palabra exacta","correccion":"forma correcta"}],'
-    + '"errores_abreviatura":[MAX 10 ejemplos: {"descripcion":"tipo error","cita":"texto exacto","correccion":"forma correcta"}],'
-    + '"nota_aclaratoria":"si hay más de 10 errores en alguna categoría, indicar cuántos más hay en total",'
-    + '"valoracion_texto":"2-3 frases al opositor de tú, cordial, resumiendo hallazgos e impacto en nota"}';
+    + 'Analiza el texto y CUENTA todos los errores de estas categorías (sin listarlos):\n'
+    + 'FALTAS GRAVES(-0.5p c/u): errores léxicos(b/v,h,ll/y,g/j) | abrev sin punto("pag"→"pág.") | abrev sin espacio("p.ej."→"p. ej.") | ordinal sin punto volada("1º"→"1.º") | sigla con puntos("D.N.I."→"DNI") | sigla+s("ONGs"→"ONG") | abrev informal(xq,tb).\n'
+    + 'ERRORES TILDE(3=1 falta): tilde omitida o incorrecta.\n'
+    + 'Responde SOLO este JSON sin markdown, completo y cerrado:\n'
+    + '{"vg":"Texto limpio|Errores leves|Errores moderados|Errores graves","fg":número,"et":número,"fet":número_decimal,"pt":número_decimal,"v":"2 frases al opositor de tú valorando el resultado"}';
+}
+
+function buildPromptEjemplos(categoria) {
+  var desc = {
+    graves: 'FALTAS GRAVES: errores léxicos, abreviaturas sin punto, siglas con puntos, ordinales sin punto volada',
+    tildes: 'ERRORES DE TILDE: palabras con tilde omitida o incorrecta'
+  }[categoria];
+  return 'Corrector ortográfico experto oposiciones Maestros Extremadura.\n'
+    + 'Del texto, extrae los 5 ejemplos MÁS REPRESENTATIVOS de: ' + desc + '.\n'
+    + 'Si hay menos de 5, lista solo los que haya. Si no hay ninguno devuelve items vacío.\n'
+    + 'Cita: solo la palabra errónea (máx 3 palabras). Descripción: máx 5 palabras. Corrección: máx 3 palabras.\n'
+    + 'Responde SOLO este JSON sin markdown, completo y cerrado:\n'
+    + '{"items":[{"c":"cita","d":"descripción","ok":"corrección"}]}';
 }
 
 // ═══════════════════════════════════════════
 // REVISAR
 // ═══════════════════════════════════════════
 var informeTexto = '';
+
+    // ── Función auxiliar: llamada a Gemini y devuelve texto ──
+async function llamarGemini(promptSistema, partesUsuario, msgLoading) {
+    document.getElementById('loading-msg').textContent = msgLoading;
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
+    var resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: promptSistema }] },
+      contents: [{ role: 'user', parts: partesUsuario }],
+      generationConfig: { temperature: 0.1, maxOutputTokens: 1024 }
+    })
+    });
+    if (!resp.ok) {
+    var errData = await resp.json().catch(() => ({}));
+    throw new Error('Error Gemini API (' + resp.status + '): ' + ((errData.error && errData.error.message) || resp.statusText));
+    }
+    var data = await resp.json();
+    if (!data.candidates || !data.candidates[0]) throw new Error('Sin respuesta de Gemini.');
+    return data.candidates[0].content.parts.map(function(p){ return p.text||''; }).join('');
+  }
 
 async function revisarTexto() {
   var apiKey = document.getElementById('gemini-apikey').value.trim();
@@ -767,27 +793,6 @@ async function revisarTexto() {
     : 'Analizando ortografía y abreviaturas…';
 
   try {
-    // ── Función auxiliar: llamada a Gemini y devuelve texto ──
-    async function llamarGemini(promptSistema, partesUsuario, msgLoading) {
-      document.getElementById('loading-msg').textContent = msgLoading;
-      var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
-      var resp = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: promptSistema }] },
-          contents: [{ role: 'user', parts: partesUsuario }],
-          generationConfig: { temperature: 0.1, maxOutputTokens: 1024 }
-        })
-      });
-      if (!resp.ok) {
-        var errData = await resp.json().catch(() => ({}));
-        throw new Error('Error Gemini API (' + resp.status + '): ' + ((errData.error && errData.error.message) || resp.statusText));
-      }
-      var data = await resp.json();
-      if (!data.candidates || !data.candidates[0]) throw new Error('Sin respuesta de Gemini.');
-      return data.candidates[0].content.parts.map(function(p){ return p.text||''; }).join('');
-    }
 
     function parsearJSON(raw) {
       var clean = raw.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
