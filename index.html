@@ -859,25 +859,23 @@ async function revisarTexto() {
 function renderResultado(inf) {
   // Badge global
   var badge = document.getElementById('badge-global');
-  var vg = inf.valoracion_global || '';
-  if (vg.includes('limpio') || vg.includes('Limpio')) {
+  var vg = (inf.valoracion_global || inf.vg || '').toLowerCase();
+  if (vg.includes('limpio') || vg === 'limpio') {
     badge.textContent = '✓ Texto limpio'; badge.className = 'badge-global badge-limpio';
-  } else if (vg.includes('leve') || vg.includes('Leve')) {
+  } else if (vg.includes('leve')) {
     badge.textContent = '⚠ Errores leves'; badge.className = 'badge-global badge-leve';
-  } else if (vg.includes('moderado') || vg.includes('Moderado')) {
+  } else if (vg.includes('moderado')) {
     badge.textContent = '⚠ Errores moderados'; badge.className = 'badge-global badge-moderado';
   } else {
     badge.textContent = '⛔ Errores graves'; badge.className = 'badge-global badge-grave';
   }
 
   // Tarjetas resumen
-  var pen = parseFloat(inf.penalizacion_total || 0);
-  var graves = parseInt(inf.faltas_graves || 0);
-  var tildes = parseInt(inf.errores_tilde_count || (inf.errores_tilde && Array.isArray(inf.errores_tilde) ? inf.errores_tilde.length : (inf.errores_tilde_total || 0)));
-  // Campo errores_tilde puede ser array o número — detectar
-  var arrTildes = Array.isArray(inf.errores_tilde) ? inf.errores_tilde : [];
-  var numTildes = typeof inf.errores_tilde === 'number' ? inf.errores_tilde : arrTildes.length;
-  var falEqTilde = parseFloat(inf.faltas_equivalentes_tilde || 0);
+  var pen = parseFloat(inf.penalizacion_total || inf.pt || 0);
+  var graves = parseInt(inf.faltas_graves || inf.fg || 0);
+  arrTildes = Array.isArray(inf.errores_tilde) ? inf.errores_tilde : (Array.isArray(inf.etd) ? inf.etd : []);
+  var numTildes = parseInt(inf.errores_tilde_total || inf.et || arrTildes.length || 0);
+  var falEqTilde = parseFloat(inf.faltas_equivalentes_tilde || inf.fet || 0);
 
   var colorPen = pen === 0 ? 'verde' : pen <= 0.5 ? 'amarillo' : pen <= 1 ? 'naranja' : 'rojo';
 
@@ -888,16 +886,16 @@ function renderResultado(inf) {
     + '<div class="pen-card"><div class="pen-card-num ' + colorPen + '">−' + pen.toFixed(1) + '</div><div class="pen-card-label">Penalización<br>total (pts)</div></div>';
 
   // Faltas graves
-  var arrGraves = inf.errores_graves || [];
+  var arrGraves = inf.errores_graves || inf.eg || [];
   if (arrGraves.length > 0) {
     document.getElementById('sec-graves').style.display = 'block';
     document.getElementById('lista-graves').innerHTML = arrGraves.map(function(e) {
       return '<div class="error-item">'
         + '<span class="error-tipo tipo-falta">Falta</span>'
         + '<div class="error-contenido">'
-        + '<div class="error-descripcion">' + e.descripcion + '</div>'
-        + (e.cita ? '<div class="error-cita">«' + e.cita + '»</div>' : '')
-        + (e.correccion ? '<div class="error-correcto">✓ Correcto: ' + e.correccion + '</div>' : '')
+        + '<div class="error-descripcion">' + (e.descripcion||e.d||'') + '</div>'
+        + ((e.cita||e.c) ? '<div class="error-cita">«' + (e.cita||e.c) + '»</div>' : '')
+        + ((e.correccion||e.ok) ? '<div class="error-correcto">✓ Correcto: ' + (e.correccion||e.ok) + '</div>' : '')
         + '</div></div>';
     }).join('');
   }
@@ -909,24 +907,24 @@ function renderResultado(inf) {
       return '<div class="error-item tilde">'
         + '<span class="error-tipo tipo-tilde">Tilde</span>'
         + '<div class="error-contenido">'
-        + '<div class="error-descripcion">' + e.descripcion + '</div>'
-        + (e.cita ? '<div class="error-cita">«' + e.cita + '»</div>' : '')
-        + (e.correccion ? '<div class="error-correcto">✓ Correcto: ' + e.correccion + '</div>' : '')
+        + '<div class="error-descripcion">' + (e.descripcion||e.d||'') + '</div>'
+        + ((e.cita||e.c) ? '<div class="error-cita">«' + (e.cita||e.c) + '»</div>' : '')
+        + ((e.correccion||e.ok) ? '<div class="error-correcto">✓ Correcto: ' + (e.correccion||e.ok) + '</div>' : '')
         + '</div></div>';
     }).join('');
   }
 
   // Errores de abreviatura
-  var arrAbrev = inf.errores_abreviatura || [];
+  var arrAbrev = inf.errores_abreviatura || inf.ea || [];
   if (arrAbrev.length > 0) {
     document.getElementById('sec-abrev').style.display = 'block';
     document.getElementById('lista-abrev').innerHTML = arrAbrev.map(function(e) {
       return '<div class="error-item abreviatura">'
         + '<span class="error-tipo tipo-abrev">Abrev.</span>'
         + '<div class="error-contenido">'
-        + '<div class="error-descripcion">' + e.descripcion + '</div>'
-        + (e.cita ? '<div class="error-cita">«' + e.cita + '»</div>' : '')
-        + (e.correccion ? '<div class="error-correcto">✓ Correcto: ' + e.correccion + '</div>' : '')
+        + '<div class="error-descripcion">' + (e.descripcion||e.d||'') + '</div>'
+        + ((e.cita||e.c) ? '<div class="error-cita">«' + (e.cita||e.c) + '»</div>' : '')
+        + ((e.correccion||e.ok) ? '<div class="error-correcto">✓ Correcto: ' + (e.correccion||e.ok) + '</div>' : '')
         + '</div></div>';
     }).join('');
   }
@@ -937,9 +935,10 @@ function renderResultado(inf) {
   }
 
   // Valoración final
-  if (inf.valoracion_texto) {
+  var valTxt = inf.valoracion_texto || inf.v || '';
+  if (valTxt) {
     document.getElementById('valoracion-final').style.display = 'block';
-    document.getElementById('valoracion-texto').textContent = inf.valoracion_texto;
+    document.getElementById('valoracion-texto').textContent = valTxt;
   }
 
   // Generar texto plano para copiar
@@ -979,7 +978,7 @@ function generarTextoPlano(inf) {
     });
     t += '\n';
   }
-  var arrAbrev = inf.errores_abreviatura || [];
+  var arrAbrev = inf.errores_abreviatura || inf.ea || [];
   if (arrAbrev.length > 0) {
     t += 'ABREVIATURAS INCORRECTAS\n' + '─'.repeat(20) + '\n';
     arrAbrev.forEach(function(e, i) {
