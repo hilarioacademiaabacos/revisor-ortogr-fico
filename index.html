@@ -167,14 +167,15 @@ textarea { height: 180px; resize: vertical; }
   </header>
 
   <div class="grid-input no-print">
-    <div class="tarjeta">
+    <!-- Configuración envuelta en Form para evitar advertencias de Chrome -->
+    <form class="tarjeta" onsubmit="return false;">
       <h2 class="titulo-seccion">Configuración</h2>
       
       <label for="api-key-input">Tu API Key de Gemini</label>
-      <input type="password" id="api-key-input" placeholder="Pega aquí tu clave de AI Studio..." onchange="guardarConfig()">
+      <input type="password" id="api-key-input" name="gemini_key" autocomplete="current-password" placeholder="Pega aquí tu clave..." onchange="guardarConfig()">
       
       <div style="display: flex; gap: 10px; margin-top: -10px; margin-bottom: 20px;">
-        <button onclick="testKey()" class="btn btn-out-rojo" style="padding: 4px 10px; font-size: 0.7rem;">Verificar Conexión</button>
+        <button type="button" onclick="testKey()" class="btn btn-out-rojo" style="padding: 4px 10px; font-size: 0.7rem;">Verificar Conexión</button>
         <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size: 0.7rem; color: var(--rojo); padding-top: 5px;">Obtener gratis</a>
       </div>
 
@@ -187,8 +188,8 @@ textarea { height: 180px; resize: vertical; }
         📍 <strong>3 Tildes:</strong> -0,50 pts
       </div>
 
-      <button id="btn-nuevo" class="btn btn-out-rojo" style="width: 100%;" onclick="nuevoExamen()">Reiniciar Aplicación</button>
-    </div>
+      <button type="button" id="btn-nuevo" class="btn btn-out-rojo" style="width: 100%;" onclick="nuevoExamen()">Reiniciar Aplicación</button>
+    </form>
 
     <div class="tarjeta">
       <h2 class="titulo-seccion">Entrada del Examen</h2>
@@ -206,7 +207,7 @@ textarea { height: 180px; resize: vertical; }
 
       <textarea id="texto-transcrito" placeholder="Si tienes el texto transcrito, pégalo aquí..."></textarea>
 
-      <button id="btn-procesar" class="btn btn-negro" onclick="iniciarProceso()">
+      <button type="button" id="btn-procesar" class="btn btn-negro" onclick="iniciarProceso()">
         <div class="spinner" id="spinner"></div>
         <span>Analizar y Corregir</span>
       </button>
@@ -255,7 +256,7 @@ textarea { height: 180px; resize: vertical; }
       <div id="res-feedback" style="font-size: 1.15rem; color: #333; line-height: 1.7; font-style: italic; white-space: pre-wrap;"></div>
       
       <div style="margin-top: 35px; padding-top: 25px; border-top: 1px solid #eee;" class="no-print">
-        <button class="btn btn-negro" onclick="descargarInformeHTML()">Descargar Informe para Imprimir / PDF</button>
+        <button type="button" class="btn btn-negro" onclick="descargarInformeHTML()">Descargar Informe para Imprimir / PDF</button>
       </div>
     </div>
   </div>
@@ -295,12 +296,30 @@ async function testKey() {
   const key = document.getElementById('api-key-input').value.trim();
   if (!key) return alert("Escribe tu clave de API primero.");
   try {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${key}`);
-    if (resp.ok) alert("✅ Clave válida. Conexión con Google establecida.");
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+    if (resp.ok) alert("✅ Conexión establecida. La clave es válida.");
     else alert("❌ Error en la clave. Asegúrate de que sea una API Key de Gemini válida.");
   } catch (e) {
     alert("❌ Error de red. No se pudo contactar con Google.");
   }
+}
+
+async function llamarGemini(payload, apiKey) {
+  // Estandarización definitiva: v1beta es la más compatible para JSON estructurado
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  
+  const resp = await fetch(url, {
+    method: 'POST', 
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  
+  if (!resp.ok) {
+    const errorData = await resp.json();
+    const errorMsg = errorData.error?.message || `Error HTTP ${resp.status}`;
+    throw new Error(errorMsg);
+  }
+  return await resp.json();
 }
 
 async function iniciarProceso() {
@@ -320,45 +339,40 @@ async function iniciarProceso() {
   const promptSistema = `Eres un corrector experto en oposiciones de Maestros (Extremadura). 
   REGLAS DE CÁLCULO ESTRICTAS:
   - Penalización = (Faltas Graves * 0,5) + (Parte entera de (Errores Tildes / 3) * 0,5).
-  - Devuelve exclusivamente un JSON con: {"faltas_graves": [], "errores_acentuacion": [], "conteo_graves": 0, "conteo_tildes": 0, "desglose_txt": "...", "penalizacion_total": 0.0, "feedback": "valoración detallada"}`;
+  Devuelve exclusivamente un JSON con esta estructura exacta:
+  {"faltas_graves": [], "errores_acentuacion": [], "conteo_graves": 0, "conteo_tildes": 0, "desglose_txt": "...", "penalizacion_total": 0.0, "feedback": "valoración detallada"}`;
 
   let userParts = [];
   if (textoPegado) {
     userParts.push({ text: "Analiza y corrige este texto según criterios de Extremadura: " + textoPegado });
   } else {
-    userParts.push({ text: "Analiza y corrige ortográficamente estos documentos de examen manuscrito:" });
-    archivosExamen.forEach(f => userParts.push({ inlineData: { mimeType: f.mimeType, data: f.data } }));
+    userParts.push({ text: "Analiza y corrige ortográficamente estos documentos de examen manuscrito según criterios de Extremadura:" });
+    archivosExamen.forEach(f => userParts.push({ inlineData: { mime_type: f.mimeType, data: f.data } }));
   }
 
-  // DEFINITIVO: Usamos v1 que es el endpoint más estable
-  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
   try {
+    // Definimos el payload siguiendo estrictamente el estándar snake_case de la API REST
     const payload = {
       contents: [{ role: "user", parts: userParts }],
       system_instruction: { parts: [{ text: promptSistema }] },
-      generation_config: { response_mime_type: "application/json" }
+      generation_config: { 
+        response_mime_type: "application/json" 
+      }
     };
 
-    const resp = await fetch(url, {
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const result = await llamarGemini(payload, apiKey);
 
-    if (!resp.ok) {
-        const errorData = await resp.json();
-        throw new Error(errorData.error?.message || `HTTP ${resp.status}`);
+    if (!result.candidates || !result.candidates[0].content.parts[0].text) {
+        throw new Error("La IA no devolvió una respuesta válida.");
     }
 
-    const result = await resp.json();
     const data = JSON.parse(result.candidates[0].content.parts[0].text);
     ultimaData = data;
     renderizar(data, nombre);
     
   } catch (err) { 
       console.error(err);
-      alert(`Error en el análisis: ${err.message}. Asegúrate de que tu clave tiene acceso a Gemini 1.5 Flash.`); 
+      alert(`Error: ${err.message}. Asegúrate de que el modelo Gemini 1.5 Flash está disponible en tu región.`); 
   } finally {
     btn.disabled = false;
     document.getElementById('spinner').style.display = 'none';
@@ -426,11 +440,11 @@ function descargarInformeHTML() {
     <div style="flex:1"><h3>Faltas Graves</h3>${genLista(ultimaData.faltas_graves, false)}</div>
     <div style="flex:1"><h3>Acentuación</h3>${genLista(ultimaData.errores_acentuacion, true)}</div></div>
     <div style="margin-top:40px; border-left:10px solid #1a1a1a; padding-left:20px;"><h3 style="margin-top:0;">Valoración Academia</h3><p style="font-style:italic; white-space:pre-wrap;">${ultimaData.feedback}</p></div>
-    <div class="no-print" style="margin-top: 50px; text-align: center;"><button onclick="window.print()" style="padding:15px 40px; background:#000; color:#fff; border:none; cursor:pointer; font-weight:bold; border-radius:4px;">IMPRIMIR / GUARDAR PDF</button></div></div></body></html>`;
+    <div class="no-print" style="margin-top: 50px; text-align:center;"><button onclick="window.print()" style="padding:15px 40px; background:#000; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">IMPRIMIR / GUARDAR PDF</button></div></div></body></html>`;
 
   const blob = new Blob([h], { type: 'text/html;charset=utf-8' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `Informe_Abacos_${nombre.replace(/\s+/g, '_')}.html`; a.click();
+  a.download = `Informe_Ortografia_${nombre.replace(/\s+/g, '_')}.html`; a.click();
 }
 
 function nuevoExamen() { location.reload(); }
