@@ -220,9 +220,12 @@ textarea { height: 180px; resize: vertical; }
 
       <label for="model-select">Modelo IA</label>
       <select id="model-select" onchange="guardarModelo()">
-        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Recomendado)</option>
-        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Más lento, más preciso)</option>
+        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Más rápido)</option>
+        <option value="gemini-1.5-flash-latest">Gemini 1.5 Flash Latest</option>
+        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Más potente)</option>
+        <option value="custom">Otro (Escribir nombre...)</option>
       </select>
+      <input type="text" id="custom-model-input" style="display:none" placeholder="Nombre del modelo (ej: gemini-2.0-flash)" onchange="guardarModelo()">
 
       <label>Nombre del Opositor</label>
       <input type="text" id="nombre-opositor" placeholder="Introduce nombre completo...">
@@ -322,7 +325,17 @@ window.onload = () => {
   if (savedKey) document.getElementById('api-key-input').value = savedKey;
   
   const savedModel = localStorage.getItem('gemini_model');
-  if (savedModel) document.getElementById('model-select').value = savedModel;
+  if (savedModel) {
+    const select = document.getElementById('model-select');
+    if ([...select.options].some(o => o.value === savedModel)) {
+      select.value = savedModel;
+    } else {
+      select.value = 'custom';
+      const custom = document.getElementById('custom-model-input');
+      custom.style.display = 'block';
+      custom.value = savedModel;
+    }
+  }
 };
 
 function guardarApiKey() {
@@ -330,7 +343,16 @@ function guardarApiKey() {
 }
 
 function guardarModelo() {
-  localStorage.setItem('gemini_model', document.getElementById('model-select').value);
+  const select = document.getElementById('model-select');
+  const customInput = document.getElementById('custom-model-input');
+  
+  if (select.value === 'custom') {
+    customInput.style.display = 'block';
+    localStorage.setItem('gemini_model', customInput.value.trim());
+  } else {
+    customInput.style.display = 'none';
+    localStorage.setItem('gemini_model', select.value);
+  }
 }
 
 document.getElementById('file-input').addEventListener('change', e => {
@@ -352,6 +374,7 @@ document.getElementById('file-input').addEventListener('change', e => {
 
 async function llamarGemini(payload, apiKey, model) {
   let retries = 0;
+  // Intentamos con v1beta que es más flexible para modelos nuevos
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   
   while (retries < 3) {
@@ -363,13 +386,18 @@ async function llamarGemini(payload, apiKey, model) {
       });
       
       if (!resp.ok) {
-        if (resp.status === 404) throw new Error(`El modelo '${model}' no fue encontrado. Intenta con 'gemini-1.5-flash'.`);
-        if (resp.status === 401 || resp.status === 403) throw new Error("Clave de API inválida o sin permisos.");
         const errorData = await resp.json();
-        throw new Error(errorData.error?.message || `Error HTTP ${resp.status}`);
+        const msg = errorData.error?.message || "Error desconocido";
+        
+        if (resp.status === 404) throw new Error(`El modelo '${model}' no existe o no está disponible para tu clave. Prueba con 'gemini-1.5-flash'.`);
+        if (resp.status === 400) throw new Error(`Petición incorrecta: ${msg}`);
+        if (resp.status === 401 || resp.status === 403) throw new Error("Clave de API inválida o sin permisos.");
+        
+        throw new Error(`Error HTTP ${resp.status}: ${msg}`);
       }
       return await resp.json();
     } catch (err) {
+      if (err.message.includes("no existe") || err.message.includes("inválida")) throw err;
       retries++;
       if (retries === 3) throw err;
       await new Promise(r => setTimeout(r, Math.pow(2, retries) * 1000));
@@ -379,7 +407,8 @@ async function llamarGemini(payload, apiKey, model) {
 
 async function iniciarProceso() {
   const apiKey = document.getElementById('api-key-input').value.trim();
-  const model = document.getElementById('model-select').value;
+  const select = document.getElementById('model-select');
+  const model = select.value === 'custom' ? document.getElementById('custom-model-input').value.trim() : select.value;
   const nombre = document.getElementById('nombre-opositor').value || "Opositor/a";
   const textoPegado = document.getElementById('texto-transcrito').value;
   const btn = document.getElementById('btn-procesar');
@@ -421,9 +450,9 @@ async function iniciarProceso() {
 
   let userParts = [];
   if (textoPegado) {
-    userParts.push({ text: "Corrige ortográficamente este texto: " + textoPegado });
+    userParts.push({ text: "Analiza y corrige ortográficamente el siguiente texto según los criterios de Extremadura: " + textoPegado });
   } else {
-    userParts.push({ text: "Transcribe y corrige ortográficamente estos documentos de examen manuscrito:" });
+    userParts.push({ text: "Analiza y corrige ortográficamente estos documentos de examen manuscrito según los criterios de Extremadura:" });
     archivosExamen.forEach(f => userParts.push({ inlineData: { mimeType: f.mimeType, data: f.data } }));
   }
 
@@ -439,7 +468,7 @@ async function iniciarProceso() {
     renderizar(data, nombre);
   } catch (err) { 
       console.error(err);
-      alert("Error: " + err.message); 
+      alert(err.message); 
   }
   finally { btn.disabled = false; loader.style.display = 'none'; }
 }
