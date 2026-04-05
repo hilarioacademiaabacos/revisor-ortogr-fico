@@ -1,666 +1,664 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Revisor Ortográfico · Oposiciones Maestros Extremadura</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #f4f1ec; --surface: #ffffff; --surface-warm: #faf8f4;
-      --ink: #1c1a17; --ink-soft: #58534c; --ink-faint: #9b9590;
-      --accent: #c0392b; --accent-hover: #a93226;
-      --accent-light: #fdf0ee; --accent-mid: #e8c4bf;
-      --amber: #c47d0a; --amber-light: #fdf5e6;
-      --green: #1a6e45; --green-light: #e8f5ef;
-      --border: #e2ddd6; --border-strong: #cac4bc;
-      --radius: 10px;
-      --shadow: 0 1px 8px rgba(28,26,23,.07), 0 2px 20px rgba(28,26,23,.05);
-      --shadow-md: 0 4px 24px rgba(28,26,23,.11);
-    }
-    body { background:var(--bg); color:var(--ink); font-family:'DM Sans',sans-serif; font-size:15px; line-height:1.6; min-height:100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revisor Ortográfico — Academia Ábacos</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rojo: #c0392b;
+  --rojo-oscuro: #96281b;
+  --rojo-suave: #fdf0ee;
+  --negro: #1a1a1a;
+  --gris-oscuro: #2d2d2d;
+  --gris-medio: #6b6b6b;
+  --gris-claro: #f4f4f2;
+  --blanco: #fefefe;
+  --verde: #1e7e34;
+  --verde-suave: #eaf5ec;
+  --naranja: #c0761a;
+  --naranja-suave: #fef6ee;
+  --azul: #1a5276;
+  --azul-suave: #eaf0f8;
+  --amarillo: #7d6608;
+  --amarillo-suave: #fefbd8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Source Serif 4', Georgia, serif; background: #ece9e4; color: var(--negro); min-height: 100vh; }
 
-    /* HEADER */
-    header { background:var(--ink); padding:0 40px; height:64px; display:flex; align-items:center; gap:16px; position:sticky; top:0; z-index:100; }
-    .hicon { width:36px;height:36px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
-    .htitle { font-family:'Fraunces',serif; font-size:1.05rem; font-weight:600; color:#fff; }
-    .hsub { font-size:.72rem; color:#6b6560; margin-left:4px; font-weight:300; letter-spacing:.04em; }
-    .hspace { flex:1; }
-    .api-btn { font-size:.72rem; padding:5px 12px; border-radius:20px; border:1px solid #333; color:#6b6560; cursor:pointer; background:none; transition:all .2s; white-space:nowrap; }
-    .api-btn.set { border-color:#2e6645; color:#4caf7d; }
-    .api-btn:hover { border-color:#555; color:#aaa; }
+/* ── BANNER API KEY ── */
+.apikey-banner { background: #111; border-bottom: 1px solid #2a2a2a; }
+.apikey-inner { max-width: 960px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.apikey-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #666; white-space: nowrap; }
+.apikey-wrap { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px; }
+.apikey-input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #ccc; padding: 6px 12px; font-family: monospace; font-size: 12px; outline: none; border-radius: 2px; transition: border-color 0.2s; }
+.apikey-input:focus { border-color: var(--rojo); }
+.apikey-input::placeholder { color: #aaa; }
+.apikey-toggle { background: none; border: none; color: #888; cursor: pointer; font-size: 14px; padding: 4px; transition: color 0.2s; line-height: 1; }
+.apikey-toggle:hover { color: #999; }
+.apikey-status { font-size: 10px; letter-spacing: 1px; white-space: nowrap; }
+.apikey-status.ok { color: #4a9a5a; }
+.apikey-status.empty { color: #666; }
+.apikey-help { font-size: 10px; color: #444; text-decoration: none; letter-spacing: 0.5px; white-space: nowrap; transition: color 0.2s; }
+.apikey-help:hover { color: #888; }
 
-    /* MAIN */
-    main { max-width:820px; margin:0 auto; padding:36px 24px 72px; }
+/* ── HEADER ── */
+header { background: var(--negro); position: relative; }
+.header-inner { display: flex; align-items: stretch; max-width: 960px; margin: 0 auto; }
+.header-acento { width: 6px; background: var(--rojo); flex-shrink: 0; }
+.header-texto { padding: 24px 32px; flex: 1; }
+.header-logo { font-family: 'Playfair Display', serif; font-size: 10px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--rojo); margin-bottom: 4px; }
+.header-titulo { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 900; color: #fff; line-height: 1.2; }
+.header-sub { font-size: 12px; color: #888; margin-top: 4px; font-style: italic; }
 
-    /* MODAL */
-    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(28,26,23,.55); backdrop-filter:blur(4px); z-index:200; align-items:center; justify-content:center; }
-    .modal-overlay.open { display:flex; }
-    .modal { background:var(--surface); border-radius:14px; padding:36px 32px; width:100%; max-width:460px; box-shadow:var(--shadow-md); animation:slideUp .22s ease; }
-    @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-    .modal h2 { font-family:'Fraunces',serif; font-size:1.2rem; font-weight:600; margin-bottom:8px; }
-    .modal-desc { font-size:.83rem; color:var(--ink-soft); margin-bottom:20px; line-height:1.65; }
-    .modal-desc a { color:var(--accent); text-decoration:none; }
-    .modal-desc a:hover { text-decoration:underline; }
-    .modal-steps { font-size:.78rem; color:var(--ink-soft); background:var(--surface-warm); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:16px; line-height:1.8; }
-    .modal-steps strong { color:var(--ink); }
-    .inp-wrap { position:relative; margin-bottom:16px; }
-    .inp-wrap input { width:100%; padding:12px 44px 12px 14px; border:1px solid var(--border-strong); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.88rem; color:var(--ink); background:var(--surface-warm); outline:none; letter-spacing:.04em; transition:border .2s; }
-    .inp-wrap input:focus { border-color:var(--accent); }
-    .vis-btn { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px; color:var(--ink-faint); }
-    .modal-actions { display:flex; gap:10px; margin-bottom:14px; }
-    .modal-note { font-size:.74rem; color:var(--ink-faint); background:var(--surface-warm); border:1px solid var(--border); border-radius:6px; padding:10px 12px; line-height:1.5; }
+/* ── MAIN ── */
+main { max-width: 960px; margin: 0 auto; padding: 32px 20px 60px; }
 
-    /* PENALTY BAR */
-    .penalty-bar { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 24px; margin-bottom:28px; display:flex; gap:28px; flex-wrap:wrap; align-items:center; box-shadow:var(--shadow); }
-    .pi { display:flex; align-items:center; gap:8px; }
-    .pdot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-    .pdot.r{background:var(--accent)} .pdot.a{background:var(--amber)} .pdot.g{background:var(--ink-faint)}
-    .pi p { font-size:.8rem; color:var(--ink-soft); }
-    .pi strong { color:var(--ink); }
+/* ── PANEL ── */
+.panel { background: var(--blanco); border: 1px solid #ddd; border-top: 4px solid var(--rojo); padding: 32px 36px; margin-bottom: 24px; box-shadow: 0 2px 14px rgba(0,0,0,0.06); }
+.panel-titulo { font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--rojo); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 8px; }
+.panel-desc { font-size: 13px; color: var(--gris-medio); line-height: 1.65; margin-bottom: 24px; }
 
-    /* UPLOAD ZONE */
-    .upload-zone { background:var(--surface); border:2px dashed var(--border-strong); border-radius:var(--radius); padding:40px 24px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; margin-bottom:20px; position:relative; }
-    .upload-zone:hover,.upload-zone.dragover { border-color:var(--accent); background:var(--accent-light); }
-    .upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-    .upload-icon { font-size:2.2rem; margin-bottom:10px; }
-    .upload-zone h3 { font-family:'Fraunces',serif; font-size:1rem; font-weight:600; margin-bottom:6px; }
-    .upload-zone p { font-size:.8rem; color:var(--ink-faint); }
-    .upload-fmts { display:inline-flex; gap:6px; margin-top:12px; }
-    .fmt { font-size:.7rem; padding:3px 9px; border-radius:20px; border:1px solid var(--border-strong); color:var(--ink-soft); background:var(--surface-warm); }
+/* ── FORMULARIO ── */
+.campo-grupo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gris-medio); }
+textarea { border: 1px solid #d0d0d0; border-radius: 2px; padding: 14px 16px; font-family: 'Source Serif 4', serif; font-size: 14px; color: var(--negro); background: var(--blanco); transition: border-color 0.2s; outline: none; width: 100%; resize: vertical; min-height: 200px; line-height: 1.65; }
+textarea:focus { border-color: var(--rojo); box-shadow: 0 0 0 3px rgba(192,57,43,0.08); }
 
-    /* PREVIEW */
-    #previewArea { display:none; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:20px; box-shadow:var(--shadow); }
-    .preview-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-    .preview-hd h4 { font-size:.85rem; font-weight:500; color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
-    .preview-pages { display:flex; gap:10px; flex-wrap:wrap; }
-    .preview-thumb { width:100px; height:130px; object-fit:cover; border-radius:6px; border:2.5px solid var(--border); cursor:pointer; transition:border-color .2s,transform .15s; }
-    .preview-thumb:hover { border-color:var(--accent); transform:scale(1.03); }
-    .preview-thumb.selected { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-light); }
-    .page-note { font-size:.75rem; color:var(--ink-faint); margin-top:10px; font-style:italic; }
+/* ── INFO PENALIZACIONES ── */
+.info-box { background: var(--amarillo-suave); border: 1px solid #e8d44d; border-left: 4px solid #c0a820; padding: 14px 20px; margin-bottom: 20px; border-radius: 0 2px 2px 0; }
+.info-box-titulo { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--amarillo); margin-bottom: 10px; }
+.info-box-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; color: #5d4e00; line-height: 1.55; }
+@media(max-width:600px){ .info-box-grid { grid-template-columns: 1fr; } }
+.info-item { display: flex; gap: 8px; align-items: flex-start; }
+.info-badge { background: var(--rojo); color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+.info-badge.verde { background: var(--verde); }
+.info-badge.azul { background: var(--azul); }
 
-    /* NOTA ROW */
-    .nota-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:24px; }
-    .nota-row label { font-size:.83rem; color:var(--ink-soft); white-space:nowrap; }
-    .nota-row input { width:100px; padding:9px 14px; border:1px solid var(--border-strong); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.88rem; background:var(--surface); color:var(--ink); outline:none; transition:border .2s; }
-    .nota-row input:focus { border-color:var(--accent); }
-    .nota-row span { font-size:.75rem; color:var(--ink-faint); }
+/* ── BOTÓN ── */
+.btn-principal { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px 24px; margin-top: 4px; background: var(--rojo); color: white; border: none; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: background 0.2s, transform 0.1s; }
+.btn-principal:hover:not(:disabled) { background: var(--rojo-oscuro); }
+.btn-principal:active:not(:disabled) { transform: scale(0.998); }
+.btn-principal:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    /* BUTTONS */
-    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:32px; }
-    .btn-primary { background:var(--accent); color:#fff; border:none; border-radius:var(--radius); padding:13px 28px; font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background .2s,transform .1s; box-shadow:0 2px 8px rgba(192,57,43,.22); }
-    .btn-primary:hover { background:var(--accent-hover); }
-    .btn-primary:active { transform:scale(.98); }
-    .btn-primary:disabled { opacity:.45; cursor:not-allowed; transform:none; }
-    .btn-secondary { background:transparent; color:var(--ink-soft); border:1px solid var(--border-strong); border-radius:var(--radius); padding:13px 20px; font-family:'DM Sans',sans-serif; font-size:.86rem; cursor:pointer; transition:background .2s,color .2s; }
-    .btn-secondary:hover { background:var(--border); color:var(--ink); }
+/* ── ERROR ── */
+.error-msg { background: var(--rojo-suave); border: 1px solid var(--rojo); color: var(--rojo-oscuro); padding: 12px 16px; font-size: 13px; margin-top: 12px; display: none; border-radius: 2px; }
+.error-msg.visible { display: block; }
 
-    /* LOADING */
-    #loadingState { display:none; align-items:center; gap:14px; padding:22px 24px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:28px; box-shadow:var(--shadow); }
-    .spinner { width:22px; height:22px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .75s linear infinite; flex-shrink:0; }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    #loadingMsg { font-size:.86rem; color:var(--ink-soft); font-style:italic; }
+/* ── LOADER ── */
+.loader-zona { display: none; text-align: center; padding: 48px 32px; background: var(--blanco); border: 1px solid #ddd; margin-bottom: 24px; }
+.loader-zona.visible { display: block; }
+.loader-spinner { width: 44px; height: 44px; border: 3px solid #eee; border-top-color: var(--rojo); border-radius: 50%; animation: spin 0.85s linear infinite; margin: 0 auto 18px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-nombre { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--negro); margin-bottom: 6px; }
+.loader-sub { font-size: 13px; color: var(--gris-medio); font-style: italic; }
+.loader-paso { margin-top: 16px; font-size: 11px; color: #bbb; letter-spacing: 0.5px; }
 
-    /* ERROR */
-    #errorState { display:none; background:var(--accent-light); border:1px solid var(--accent-mid); border-radius:var(--radius); padding:18px 22px; margin-bottom:24px; font-size:.86rem; color:var(--accent); line-height:1.7; }
+/* ── INFORME ── */
+.informe-zona { display: none; animation: fadeUp 0.4s ease; }
+.informe-zona.visible { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
-    /* RESULTS */
-    .score-banner { border-radius:var(--radius); padding:22px 26px; margin-bottom:22px; display:flex; align-items:center; gap:22px; flex-wrap:wrap; box-shadow:var(--shadow-md); }
-    .score-banner.excellent { background:var(--green-light); border:1.5px solid #a8d5bc; }
-    .score-banner.good      { background:var(--amber-light); border:1.5px solid #f0c97a; }
-    .score-banner.poor      { background:var(--accent-light); border:1.5px solid var(--accent-mid); }
-    .score-circle { width:70px; height:70px; border-radius:50%; border:2.5px solid; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; }
-    .score-circle.excellent{border-color:var(--green);color:var(--green)}
-    .score-circle.good{border-color:var(--amber);color:var(--amber)}
-    .score-circle.poor{border-color:var(--accent);color:var(--accent)}
-    .snumber { font-family:'Fraunces',serif; font-size:1.45rem; font-weight:700; line-height:1; }
-    .slbl { font-size:.6rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
-    .sinfo h2 { font-family:'Fraunces',serif; font-size:1.1rem; font-weight:600; margin-bottom:4px; }
-    .scalc { font-size:.79rem; color:var(--ink-soft); margin-top:4px; }
-    .schips { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-    .chip { font-size:.75rem; padding:4px 10px; border-radius:20px; background:rgba(255,255,255,.65); border:1px solid rgba(0,0,0,.07); color:var(--ink-soft); }
-    .chip strong { color:var(--ink); }
+.inf-cabecera { background: var(--negro); color: white; padding: 28px 36px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+.inf-titulo-bloque .inf-nombre { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; }
+.inf-titulo-bloque .inf-sub { font-size: 12px; color: #999; margin-top: 4px; font-style: italic; }
+.inf-nota-wrap { text-align: right; }
+.inf-nota-num { font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 900; line-height: 1; }
+.inf-nota-sobre { font-size: 12px; color: #777; }
+.inf-nota-estado { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--rojo); margin-top: 4px; font-weight: 700; }
 
-    .error-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px; box-shadow:var(--shadow); overflow:hidden; }
-    .esh { padding:14px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
-    .esh h3 { font-family:'Fraunces',serif; font-size:.96rem; font-weight:600; flex:1; }
-    .sb { font-size:.7rem; font-weight:500; padding:4px 10px; border-radius:20px; white-space:nowrap; }
-    .sb.r{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-mid)}
-    .sb.a{background:var(--amber-light);color:var(--amber);border:1px solid #f0c97a}
-    .sb.g{background:var(--green-light);color:var(--green);border:1px solid #a8d5bc}
-    .sb.p{background:var(--surface-warm);color:var(--ink-soft);border:1px solid var(--border)}
-    .no-errors { padding:18px 20px; font-size:.84rem; color:var(--green); display:flex; gap:8px; align-items:center; }
+.inf-cuerpo { background: var(--blanco); border: 1px solid #ddd; border-top: none; padding: 36px; }
 
-    table.et { width:100%; border-collapse:collapse; }
-    table.et th { text-align:left; font-size:.7rem; font-weight:500; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); padding:9px 20px 7px; border-bottom:1px solid var(--border); background:var(--surface-warm); }
-    table.et td { padding:11px 20px; font-size:.83rem; border-bottom:1px solid var(--border); vertical-align:top; }
-    table.et tr:last-child td { border-bottom:none; }
-    table.et tr:hover td { background:var(--surface-warm); }
-    .ww { font-family:'Courier New',monospace; font-size:.8rem; background:#fde8e6; color:var(--accent); padding:2px 6px; border-radius:4px; text-decoration:line-through; }
-    .wr { font-family:'Courier New',monospace; font-size:.8rem; background:var(--green-light); color:var(--green); padding:2px 6px; border-radius:4px; }
-    .ed { color:var(--ink-soft); font-size:.8rem; }
-    .extras { padding:10px 20px; font-size:.76rem; color:var(--ink-faint); font-style:italic; border-top:1px dashed var(--border); }
+/* Resumen penalización */
+.resumen-pen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+@media(max-width:600px){ .resumen-pen { grid-template-columns: 1fr; } }
+.res-card { border: 1px solid #eee; padding: 16px 18px; text-align: center; }
+.res-card-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #aaa; margin-bottom: 6px; }
+.res-card-num { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; line-height: 1; }
+.res-card-num.rojo { color: var(--rojo); }
+.res-card-num.naranja { color: var(--naranja); }
+.res-card-num.azul { color: var(--azul); }
+.res-card-sub { font-size: 10px; color: #bbb; margin-top: 4px; }
 
-    .val-card { background:var(--ink); color:#f4f1ec; border-radius:var(--radius); padding:26px 28px; margin-top:22px; box-shadow:var(--shadow-md); }
-    .val-card h3 { font-family:'Fraunces',serif; font-size:1rem; font-weight:600; color:#fff; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-    .val-text { font-size:.88rem; line-height:1.78; color:#c8c2ba; white-space:pre-wrap; }
+/* tabla errores */
+.seccion-titulo { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gris-medio); font-weight: 700; padding-bottom: 8px; border-bottom: 2px solid var(--rojo); margin-bottom: 20px; }
+.tabla-errores { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 28px; }
+.tabla-errores th { background: var(--negro); color: white; padding: 9px 14px; text-align: left; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; }
+.tabla-errores td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+.tabla-errores tr:last-child td { border-bottom: none; }
+.tag-error { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 2px; display: inline-block; }
+.tag-grave { background: #fde8e8; color: #a00; }
+.tag-tilde { background: #fff3cd; color: #856404; }
+.tag-abre { background: var(--azul-suave); color: var(--azul); }
+.correcto { color: var(--verde); font-weight: 600; }
+.incorrecto { color: var(--rojo); text-decoration: line-through; }
+.mas-errores { font-size: 11px; color: #aaa; font-style: italic; padding: 6px 14px 10px; }
 
-    .transc-card { background:var(--surface-warm); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:22px; overflow:hidden; box-shadow:var(--shadow); }
-    .transc-hd { padding:14px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
-    .transc-hd h3 { font-family:'Fraunces',serif; font-size:.94rem; font-weight:600; flex:1; }
-    .tarrow { font-size:.8rem; color:var(--ink-faint); transition:transform .2s; }
-    .tarrow.open { transform:rotate(180deg); }
-    .transc-body { display:none; padding:18px 20px; font-size:.84rem; line-height:1.75; color:var(--ink-soft); white-space:pre-wrap; max-height:300px; overflow-y:auto; }
-    .transc-body.open { display:block; }
+/* valoración */
+.valoracion-bloque { margin-bottom: 20px; }
+.valoracion-texto { font-size: 14px; line-height: 1.75; color: var(--gris-oscuro); }
 
-    @media(max-width:600px){
-      header{padding:0 18px} main{padding:24px 14px 56px}
-      table.et th:nth-child(3),table.et td:nth-child(3){display:none}
-      .score-banner{flex-direction:column;align-items:flex-start;gap:14px}
-    }
-  </style>
+/* recuadros */
+.recuadro { padding: 18px 22px; margin-bottom: 14px; border-left: 4px solid; border-radius: 0 2px 2px 0; }
+.rec-verde { background: var(--verde-suave); border-color: var(--verde); }
+.rec-rojo { background: var(--rojo-suave); border-color: var(--rojo); }
+.rec-naranja { background: var(--naranja-suave); border-color: var(--naranja); }
+.rec-titulo { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.rec-verde .rec-titulo { color: var(--verde); }
+.rec-rojo .rec-titulo { color: var(--rojo); }
+.rec-naranja .rec-titulo { color: var(--naranja); }
+.rec-texto { font-size: 14px; line-height: 1.72; color: var(--gris-oscuro); }
+
+/* barra penalización */
+.barra-pen-wrap { margin: 20px 0; }
+.barra-pen-label { font-size: 12px; color: var(--gris-medio); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.barra-bg { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+.barra-fill-pen { height: 100%; border-radius: 3px; background: var(--rojo); }
+
+/* acciones */
+.acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 40px; }
+.btn-accion { padding: 10px 20px; border: 2px solid var(--negro); background: transparent; font-family: 'Source Serif 4', serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; }
+.btn-accion:hover { background: var(--negro); color: white; }
+.btn-accion.prim { background: var(--rojo); color: white; border-color: var(--rojo); }
+.btn-accion.prim:hover { background: var(--rojo-oscuro); border-color: var(--rojo-oscuro); }
+
+.nota-pie { font-size: 11px; color: #aaa; text-align: center; font-style: italic; padding-bottom: 24px; }
+
+/* sin errores */
+.sin-errores { background: var(--verde-suave); border: 1px solid #a8d5b0; padding: 16px 20px; font-size: 13px; color: var(--verde); font-weight: 600; margin-bottom: 20px; text-align: center; }
+
+@media print {
+  header, .apikey-banner, .panel, .acciones, .loader-zona, .nota-pie { display: none !important; }
+  .informe-zona { display: block !important; }
+  body { background: white; }
+}
+</style>
 </head>
 <body>
 
-<!-- MODAL CLAVE API -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <h2>🔑 Clave API de Google Gemini</h2>
-    <p class="modal-desc">
-      Necesitas una clave personal gratuita de Google AI Studio para usar este corrector.
-    </p>
-    <div class="modal-steps">
-      <strong>Cómo obtenerla (gratis, 1 minuto):</strong><br>
-      1. Ve a <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a><br>
-      2. Haz clic en <em>"Create API key"</em><br>
-      3. Copia la clave y pégala aquí abajo
+<header>
+  <div class="header-inner">
+    <div class="header-acento"></div>
+    <div class="header-texto">
+      <div class="header-logo">Academia Ábacos · Oposiciones Maestros Extremadura</div>
+      <div class="header-titulo">Revisor Ortográfico con IA</div>
+      <div class="header-sub">Criterios oficiales del Tribunal — Faltas graves · Tildes · Abreviaturas · Siglas</div>
     </div>
-    <div class="inp-wrap">
-      <input type="password" id="apiKeyInput" placeholder="AIza…" autocomplete="off" />
-      <button class="vis-btn" onclick="toggleVis()" title="Mostrar/ocultar">👁</button>
+    <div style="display:flex;align-items:center;padding:16px 24px;flex-shrink:0;">
+      <img src="https://hilarioacademiaabacos.github.io/panel-oposiciones/logo-abacos.png"
+           alt="Logo Academia Ábacos"
+           style="height:52px;width:auto;filter:brightness(0) invert(1);"
+           onerror="this.style.display='none'">
     </div>
-    <div class="modal-actions">
-      <button class="btn-primary" onclick="guardarKey()" style="flex:1">Guardar y continuar</button>
-      <button class="btn-secondary" id="btnCancelarModal" onclick="cerrarModal()">Cancelar</button>
+  </div>
+</header>
+
+<div class="apikey-banner">
+  <div class="apikey-inner">
+    <span class="apikey-label">API Key Gemini</span>
+    <div class="apikey-wrap">
+      <input type="password" id="gemini-apikey" class="apikey-input"
+        placeholder="Pega aquí tu clave de Google AI Studio (AIza...)"
+        oninput="actualizarEstadoKey()" autocomplete="off" spellcheck="false">
+      <button class="apikey-toggle" onclick="toggleVerKey()" title="Mostrar/ocultar clave" id="btn-toggle-key">👁</button>
     </div>
-    <div class="modal-note">
-      ⚠️ Tu clave se guarda solo en la memoria de esta pestaña. Al cerrar el navegador tendrás que volver a introducirla. No la compartas con nadie.
-    </div>
+    <span class="apikey-status empty" id="apikey-status">Sin clave</span>
+    <a class="apikey-help" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">→ Obtener clave gratuita</a>
   </div>
 </div>
 
-<!-- HEADER -->
-<header>
-  <div class="hicon">📝</div>
-  <span class="htitle">Revisor Ortográfico</span>
-  <span class="hsub">Oposiciones · Cuerpo de Maestros · Extremadura</span>
-  <div class="hspace"></div>
-  <button class="api-btn" id="apiBtnHdr" onclick="abrirModal()">🔑 Sin clave API</button>
-</header>
-
 <main>
 
-  <!-- Criterios -->
-  <div class="penalty-bar">
-    <div class="pi"><div class="pdot r"></div><p><strong>Falta grave</strong> → −0,5 pts</p></div>
-    <div class="pi"><div class="pdot a"></div><p><strong>3 errores de tilde</strong> → −0,5 pts</p></div>
-    <div class="pi"><div class="pdot g"></div><p>Nota final <strong>nunca negativa</strong></p></div>
-  </div>
+  <div class="panel">
+    <div class="panel-titulo">📝 Texto a revisar</div>
+    <p class="panel-desc">
+      Pega aquí el texto del opositor (transcripción del examen manuscrito). 
+      El revisor detectará faltas graves, errores de acentuación y errores de abreviaturas/siglas 
+      aplicando exactamente los criterios oficiales del Tribunal.
+    </p>
 
-  <!-- Upload -->
-  <div class="upload-zone" id="uploadZone"
-       ondragover="onDragOver(event)" ondragleave="onDragLeave()" ondrop="onDrop(event)">
-    <input type="file" id="fileInput" accept="image/*,.pdf" onchange="onFileSelected(event)" />
-    <div class="upload-icon">📄</div>
-    <h3>Sube el examen manuscrito</h3>
-    <p>Arrastra el archivo aquí o haz clic para buscarlo</p>
-    <div class="upload-fmts">
-      <span class="fmt">JPG</span>
-      <span class="fmt">PNG</span>
-      <span class="fmt">PDF</span>
+    <div class="info-box">
+      <div class="info-box-titulo">⚖️ Criterios oficiales de penalización</div>
+      <div class="info-box-grid">
+        <div class="info-item">
+          <span class="info-badge">−0,5p</span>
+          <span>Cada falta ortográfica grave (b/v, h, ll/y, g/j, c/s/z…)</span>
+        </div>
+        <div class="info-item">
+          <span class="info-badge">−0,5p</span>
+          <span>Cada 3 errores de acentuación (tildes) = 1 falta</span>
+        </div>
+        <div class="info-item">
+          <span class="info-badge naranja">−0,5p</span>
+          <span>Abreviatura sin punto: "pag" → "pág."</span>
+        </div>
+        <div class="info-item">
+          <span class="info-badge naranja">−0,5p</span>
+          <span>Sigla con puntos: "L.O.M.L.O.E." → "LOMLOE"</span>
+        </div>
+        <div class="info-item">
+          <span class="info-badge azul">−0,5p</span>
+          <span>Ordinal sin punto: "1º" → "1.º" / "2ª" → "2.ª"</span>
+        </div>
+        <div class="info-item">
+          <span class="info-badge azul">−0,5p</span>
+          <span>Sigla con marca de plural: "ONGs" → "ONG"</span>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- Preview páginas -->
-  <div id="previewArea">
-    <div class="preview-hd">
-      <h4>📄 <span id="previewTitle">Páginas detectadas</span></h4>
-      <button class="btn-secondary" onclick="quitarArchivo()" style="font-size:.78rem;padding:6px 12px">✕ Quitar</button>
+    <div class="campo-grupo">
+      <label for="texto-input">Texto del examen</label>
+      <textarea id="texto-input" placeholder="Pega aquí el texto del opositor/a para revisar ortografía, tildes, abreviaturas y siglas...&#10;&#10;Ejemplo: La educación primaria en Extremadura se regula según el RD 157/2022 y el Decreto 107/2022 de 28 de julio. El alumno debe adquirir las competencias básicas previstas en el perfil de salida..."></textarea>
     </div>
-    <div class="preview-pages" id="previewPages"></div>
-    <p class="page-note" id="pageNote"></p>
+
+    <div class="error-msg" id="error-msg">⚠️ Por favor, introduce un texto para revisar.</div>
+
+    <button class="btn-principal" id="btn-revisar" onclick="revisarTexto()">
+      Revisar ortografía según criterios del Tribunal →
+    </button>
   </div>
 
-  <!-- Nota de partida -->
-  <div class="nota-row">
-    <label>Nota de partida (opcional):</label>
-    <input type="number" id="notaPartida" min="0" max="10" step="0.01" placeholder="ej. 7,50" />
-    <span>Si la indicas, calculamos la nota final tras penalizaciones.</span>
+  <!-- LOADER -->
+  <div class="loader-zona" id="loader">
+    <div class="loader-spinner"></div>
+    <div class="loader-nombre">Analizando el texto...</div>
+    <div class="loader-sub">Aplicando criterios oficiales del Tribunal</div>
+    <div class="loader-paso" id="loader-paso">Iniciando revisión...</div>
   </div>
 
-  <!-- Acciones -->
-  <div class="actions">
-    <button class="btn-primary" id="btnAnalizar" onclick="analizarExamen()">🔍 Analizar examen</button>
-    <button class="btn-secondary" onclick="limpiarTodo()">Limpiar todo</button>
+  <!-- INFORME -->
+  <div class="informe-zona" id="informe-zona">
+
+    <div class="inf-cabecera">
+      <div class="inf-titulo-bloque">
+        <div class="inf-nombre">Informe de revisión ortográfica</div>
+        <div class="inf-sub" id="inf-palabras">—</div>
+      </div>
+      <div class="inf-nota-wrap">
+        <div class="inf-nota-num" id="inf-pen">−0,0p</div>
+        <div class="inf-nota-sobre">penalización total</div>
+        <div class="inf-nota-estado" id="inf-estado">—</div>
+      </div>
+    </div>
+
+    <div class="inf-cuerpo">
+
+      <!-- Resumen 3 tarjetas -->
+      <div class="resumen-pen">
+        <div class="res-card">
+          <div class="res-card-label">Faltas graves</div>
+          <div class="res-card-num rojo" id="n-graves">0</div>
+          <div class="res-card-sub" id="sub-graves">—</div>
+        </div>
+        <div class="res-card">
+          <div class="res-card-label">Errores de tilde</div>
+          <div class="res-card-num naranja" id="n-tildes">0</div>
+          <div class="res-card-sub" id="sub-tildes">—</div>
+        </div>
+        <div class="res-card">
+          <div class="res-card-label">Abrev. / Siglas</div>
+          <div class="res-card-num azul" id="n-abrev">0</div>
+          <div class="res-card-sub" id="sub-abrev">—</div>
+        </div>
+      </div>
+
+      <!-- Barra penalización -->
+      <div class="barra-pen-wrap">
+        <div class="barra-pen-label">
+          <span>Impacto en la nota</span>
+          <span id="barra-label-der">0p de penalización máxima estimada (10p)</span>
+        </div>
+        <div class="barra-bg">
+          <div class="barra-fill-pen" id="barra-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Cuerpo dinámico -->
+      <div id="inf-dinamico"></div>
+
+    </div>
+
+    <div class="acciones">
+      <button class="btn-accion prim" onclick="copiarInforme()">📋 Copiar informe</button>
+      <button class="btn-accion" onclick="nuevoTexto()">↩ Revisar otro texto</button>
+    </div>
+
   </div>
 
-  <!-- Loading -->
-  <div id="loadingState">
-    <div class="spinner"></div>
-    <p id="loadingMsg">Procesando…</p>
-  </div>
-
-  <!-- Error -->
-  <div id="errorState"></div>
-
-  <!-- Resultados -->
-  <div id="results"></div>
+  <div class="nota-pie">Revisor basado en los criterios oficiales del Tribunal — Cuerpo de Maestros/as · Academia Ábacos · Extremadura</div>
 
 </main>
 
 <script>
-  // PDF.js worker
-  if (typeof pdfjsLib !== 'undefined') {
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ═══════════════════════════ API KEY ═══════════════════════════
+function actualizarEstadoKey() {
+  var v = document.getElementById('gemini-apikey').value.trim();
+  var st = document.getElementById('apikey-status');
+  if (v.length > 10) { st.textContent = '✓ Clave introducida'; st.className = 'apikey-status ok'; }
+  else { st.textContent = 'Sin clave'; st.className = 'apikey-status empty'; }
+}
+function toggleVerKey() {
+  var inp = document.getElementById('gemini-apikey');
+  var btn = document.getElementById('btn-toggle-key');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+// ═══════════════════════════ PASOS LOADER ═══════════════════════════
+var PASOS = [
+  'Contando palabras y analizando estructura...',
+  'Detectando faltas ortográficas graves (b/v, h, ll/y...)...',
+  'Verificando errores de acentuación y tildes...',
+  'Comprobando abreviaturas y siglas (RAE/Extremadura)...',
+  'Verificando ordinales y formas plurales de siglas...',
+  'Calculando penalización total...',
+  'Redactando valoración personalizada...'
+];
+var pasoIdx = 0, pasoTimer;
+function iniciarPasos() {
+  pasoIdx = 0;
+  document.getElementById('loader-paso').textContent = PASOS[0];
+  pasoTimer = setInterval(function() {
+    pasoIdx = (pasoIdx + 1) % PASOS.length;
+    document.getElementById('loader-paso').textContent = PASOS[pasoIdx];
+  }, 1800);
+}
+function pararPasos() { clearInterval(pasoTimer); }
+
+// ═══════════════════════════ PROMPTS ═══════════════════════════
+var SYSTEM_PROMPT = 'Eres un corrector ortográfico experto especializado en exámenes de oposiciones al Cuerpo de Maestros de Educación Primaria en Extremadura. Tu única función es detectar errores ortográficos, de acentuación y de abreviaturas en textos escritos por opositores.\n\n'
++ 'REGLAS DE PENALIZACIÓN (criterios oficiales del Tribunal):\n'
++ '* Cada falta ortográfica grave: −0,5 puntos sobre la nota final\n'
++ '* Cada 3 errores de acentuación (tildes): equivalen a 1 falta (−0,5 puntos)\n'
++ '* La nota final nunca puede ser negativa\n\n'
++ 'CATEGORÍAS DE ERRORES A DETECTAR:\n\n'
++ 'FALTAS GRAVES (−0,5p cada una):\n'
++ '* Errores léxicos: confusión b/v, h, ll/y, g/j, c/s/z, y similares\n'
++ '* Abreviatura sin punto de cierre: "pag" en lugar de "pág."\n'
++ '* Abreviatura compleja sin espacio tras cada punto: "p.ej." → "p. ej."; "EE.UU." → "EE. UU."\n'
++ '* Número ordinal sin punto antes de letra volada: "1º" → "1.º"; "2ª" → "2.ª"\n'
++ '* Sigla con puntos entre letras: "D.N.I." → "DNI"; "L.O.M.L.O.E." → "LOMLOE"\n'
++ '* Sigla con marca de plural: "ONGs" → "ONG"\n'
++ '* Abreviatura no convencional: xq, tb, dnd, x, d (prohibidas en oposiciones)\n\n'
++ 'ERRORES DE ACENTUACIÓN (cada 3 = 1 falta):\n'
++ '* Tilde omitida o incorrecta en cualquier palabra\n'
++ '* Abreviatura que debería llevar tilde y no la lleva: "pag." → "pág."; "cod." → "cód."\n\n'
++ 'ABREVIATURAS CORRECTAS DE REFERENCIA (RAE / Extremadura):\n'
++ 'art./arts. | pág./págs. | núm./n.º | cap./caps. | sig./ss. | etc. | p. ej. | C. A./CC. AA. | R. D./RR. DD. | L. O./LL. OO. | U. D./UU. DD. | P. D./PP. DD. | admón.\n\n'
++ 'SIGLAS: invariables en escritura (ONG, no ONGs). Sin puntos entre letras (LOMLOE, DUA, TIC, DNI). Excepción: EE. UU. (con espacio, sin puntos entre letras de cada palabra).\n\n'
++ 'INSTRUCCIONES DE ANÁLISIS:\n'
++ '* Detecta SOLO errores reales y objetivos. No inventes errores ni seas subjetivo\n'
++ '* Si no hay errores en una categoría, devuelve array vacío []\n'
++ '* Para cada error: cita la palabra o expresión exacta del texto, describe el error brevemente, indica la forma correcta\n'
++ '* Cuenta el total real de cada tipo de error aunque no los listes todos\n'
++ '* Lista únicamente los 5 ejemplos más representativos de cada categoría\n'
++ '* Si hay más de 5, indícalo en el campo "adicionales"\n\n'
++ 'TONO: Dirígete al opositor de tú, con un tono cordial, directo y constructivo. Sin condescendencia ni fórmulas vacías. Sé específico sobre el impacto en la nota.\n\n'
++ 'RESPONDE SOLO JSON VÁLIDO SIN MARKDOWN. ESTRUCTURA OBLIGATORIA:\n'
++ '{\n'
++ '  "total_palabras": number,\n'
++ '  "graves": {\n'
++ '    "total": number,\n'
++ '    "penalizacion": number,\n'
++ '    "ejemplos": [ { "incorrecto": "...", "correcto": "...", "descripcion": "..." } ],\n'
++ '    "adicionales": number\n'
++ '  },\n'
++ '  "tildes": {\n'
++ '    "total": number,\n'
++ '    "faltas_equivalentes": number,\n'
++ '    "penalizacion": number,\n'
++ '    "ejemplos": [ { "incorrecto": "...", "correcto": "...", "descripcion": "..." } ],\n'
++ '    "adicionales": number\n'
++ '  },\n'
++ '  "abreviaturas": {\n'
++ '    "total": number,\n'
++ '    "penalizacion": number,\n'
++ '    "ejemplos": [ { "incorrecto": "...", "correcto": "...", "descripcion": "..." } ],\n'
++ '    "adicionales": number\n'
++ '  },\n'
++ '  "penalizacion_total": number,\n'
++ '  "valoracion": "texto directo dirigido al opositor de tú, 3-5 frases, evaluando el nivel ortográfico global e impacto en la nota",\n'
++ '  "puntos_fuertes": "si hay aspectos positivos (puede ser vacío)",\n'
++ '  "recomendacion": "1-2 acciones concretas prioritarias para mejorar"\n'
++ '}';
+
+// ═══════════════════════════ REVISAR ═══════════════════════════
+async function revisarTexto() {
+  var texto = document.getElementById('texto-input').value.trim();
+  var errorEl = document.getElementById('error-msg');
+  if (!texto || texto.length < 20) {
+    errorEl.classList.add('visible');
+    return;
   }
+  errorEl.classList.remove('visible');
 
-  // ── Estado ───────────────────────────────────────────────────
-  let apiKey = '';
-  let paginas = [];        // [{ data: base64, mime: string, dataUrl: string }]
-  let seleccionadas = new Set();
-
-  const GEMINI_MODEL = 'gemini-2.5-flash';
-
-  // ── Modal API Key ────────────────────────────────────────────
-  window.addEventListener('load', abrirModal);
-
-  function abrirModal() {
-    document.getElementById('apiKeyInput').value = apiKey || '';
-    document.getElementById('btnCancelarModal').style.display = apiKey ? 'block' : 'none';
-    document.getElementById('modalOverlay').classList.add('open');
-    setTimeout(() => document.getElementById('apiKeyInput').focus(), 120);
+  var apiKey = document.getElementById('gemini-apikey').value.trim();
+  if (!apiKey) {
+    errorEl.textContent = '⚠️ Necesitas introducir tu clave de API de Google Gemini.';
+    errorEl.classList.add('visible');
+    return;
   }
-  function cerrarModal() {
-    document.getElementById('modalOverlay').classList.remove('open');
-  }
-  function guardarKey() {
-    const val = document.getElementById('apiKeyInput').value.trim();
-    if (!val || val.length < 20) {
-      alert('Introduce una clave válida. Debe empezar por "AIza…" y tener al menos 20 caracteres.');
-      return;
-    }
-    apiKey = val;
-    const btn = document.getElementById('apiBtnHdr');
-    btn.textContent = '🔑 Clave configurada';
-    btn.classList.add('set');
-    cerrarModal();
-  }
-  function toggleVis() {
-    const inp = document.getElementById('apiKeyInput');
-    inp.type = inp.type === 'password' ? 'text' : 'password';
-  }
+  errorEl.textContent = '⚠️ Por favor, introduce un texto para revisar.';
 
-  // ── Drag & Drop ──────────────────────────────────────────────
-  function onDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragover'); }
-  function onDragLeave()  { document.getElementById('uploadZone').classList.remove('dragover'); }
-  function onDrop(e)      { e.preventDefault(); onDragLeave(); const f = e.dataTransfer.files[0]; if (f) procesarArchivo(f); }
-  function onFileSelected(e) { const f = e.target.files[0]; if (f) procesarArchivo(f); }
+  document.getElementById('btn-revisar').disabled = true;
+  document.getElementById('loader').classList.add('visible');
+  document.getElementById('informe-zona').classList.remove('visible');
+  iniciarPasos();
 
-  // ── Procesar archivo ─────────────────────────────────────────
-  async function procesarArchivo(file) {
-    paginas = []; seleccionadas = new Set();
-    document.getElementById('previewPages').innerHTML = '';
-    document.getElementById('previewArea').style.display = 'none';
-    document.getElementById('results').style.display = 'none';
-    document.getElementById('errorState').style.display = 'none';
-
-    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    setLoading(true, 'Procesando archivo…');
-    try {
-      if (isPDF) await procesarPDF(file);
-      else        await procesarImagen(file);
-      mostrarPreview();
-    } catch(err) {
-      mostrarError('Error al procesar el archivo: ' + err.message);
-    }
-    setLoading(false);
-  }
-
-  function procesarImagen(file) {
-    return new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = e => {
-        const dataUrl = e.target.result;
-        paginas.push({ data: dataUrl.split(',')[1], mime: file.type || 'image/jpeg', dataUrl });
-        res();
-      };
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
-  }
-
-  async function procesarPDF(file) {
-    const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-    for (let i = 1; i <= pdf.numPages; i++) {
-      setLoading(true, `Procesando PDF: página ${i} de ${pdf.numPages}…`);
-      const page = await pdf.getPage(i);
-      const vp = page.getViewport({ scale: 2.0 });
-      const canvas = document.createElement('canvas');
-      canvas.width = vp.width; canvas.height = vp.height;
-      await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-      paginas.push({ data: dataUrl.split(',')[1], mime: 'image/jpeg', dataUrl });
-    }
-  }
-
-  function mostrarPreview() {
-    const container = document.getElementById('previewPages');
-    container.innerHTML = '';
-    paginas.forEach((p, idx) => {
-      const img = document.createElement('img');
-      img.src = p.dataUrl;
-      img.className = 'preview-thumb selected';
-      img.title = `Página ${idx + 1}`;
-      img.alt = `Página ${idx + 1}`;
-      seleccionadas.add(idx);
-      img.onclick = () => togglePag(idx, img);
-      container.appendChild(img);
-    });
-    document.getElementById('previewTitle').textContent =
-      paginas.length === 1 ? '1 imagen cargada' : `${paginas.length} páginas · selecciona las que quieres corregir`;
-    document.getElementById('pageNote').textContent =
-      paginas.length > 1 ? 'Las páginas resaltadas se enviarán al corrector. Clic para seleccionar/deseleccionar.' : '';
-    document.getElementById('previewArea').style.display = 'block';
-  }
-
-  function togglePag(idx, img) {
-    if (seleccionadas.has(idx)) { seleccionadas.delete(idx); img.classList.remove('selected'); }
-    else                        { seleccionadas.add(idx);    img.classList.add('selected'); }
-  }
-
-  function quitarArchivo() {
-    paginas = []; seleccionadas = new Set();
-    document.getElementById('previewArea').style.display = 'none';
-    document.getElementById('previewPages').innerHTML = '';
-    document.getElementById('fileInput').value = '';
-    document.getElementById('results').style.display = 'none';
-    document.getElementById('errorState').style.display = 'none';
-  }
-  function limpiarTodo() { quitarArchivo(); document.getElementById('notaPartida').value = ''; }
-
-  // ── Prompt ───────────────────────────────────────────────────
-  const SYSTEM_TEXT = `Eres un corrector ortográfico experto especializado en exámenes de oposiciones al Cuerpo de Maestros de Educación Primaria en Extremadura. Tu función es:
-1. Leer el texto manuscrito de las imágenes adjuntas (pueden ser una o varias páginas de un examen).
-2. Detectar errores ortográficos, de acentuación y de abreviaturas en ese texto.
-
-REGLAS DE PENALIZACIÓN (criterios oficiales del Tribunal):
-- Cada falta ortográfica grave: −0,5 puntos sobre la nota final
-- Cada 3 errores de acentuación (tildes): equivalen a 1 falta (−0,5 puntos)
-- La nota final nunca puede ser negativa
-
-CATEGORÍAS DE ERRORES A DETECTAR:
-
-FALTAS GRAVES (−0,5p cada una):
-- Errores léxicos: confusión b/v, h, ll/y, g/j, c/s/z, y similares
-- Abreviatura sin punto de cierre: "pag" en lugar de "pág."
-- Abreviatura compleja sin espacio tras cada punto: "p.ej." → "p. ej."; "EE.UU." → "EE. UU."
-- Número ordinal sin punto antes de letra volada: "1º" → "1.º"; "2ª" → "2.ª"
-- Sigla con puntos entre letras: "D.N.I." → "DNI"; "L.O.M.L.O.E." → "LOMLOE"
-- Sigla con marca de plural: "ONGs" → "ONG"
-- Abreviatura no convencional: xq, tb, dnd, x, d (prohibidas en oposiciones)
-
-ERRORES DE ACENTUACIÓN (cada 3 = 1 falta):
-- Tilde omitida o incorrecta en cualquier palabra
-- Abreviatura que debería llevar tilde y no la lleva: "pag." → "pág."; "cod." → "cód."
-
-ABREVIATURAS CORRECTAS DE REFERENCIA (RAE / Extremadura):
-art./arts. | pág./págs. | núm./n.º | cap./caps. | sig./ss. | etc. | p. ej. | C. A./CC. AA. | R. D./RR. DD. | L. O./LL. OO. | U. D./UU. DD. | P. D./PP. DD. | admón.
-
-SIGLAS: invariables en escritura (ONG, no ONGs). Sin puntos entre letras (LOMLOE, DUA, TIC, DNI). Excepción: EE. UU. (con espacio, sin puntos entre letras de cada palabra).
-
-INSTRUCCIONES DE ANÁLISIS:
-- Detecta SOLO errores reales y objetivos. No inventes errores.
-- Si la letra manuscrita es ilegible en algún fragmento, ignóralo y trabaja solo con lo que puedas leer con seguridad.
-- Si no hay errores en una categoría, devuelve array vacío.
-- Para cada error: cita la palabra o expresión exacta, describe el error brevemente, indica la forma correcta.
-- Cuenta el total real de errores aunque no los listes todos.
-- Lista únicamente los 5 ejemplos más representativos de cada categoría. Si hay más, indícalo en "adicionales".
-
-TONO DE LA VALORACIÓN: Dirígete al opositor de tú, con tono cordial, directo y constructivo. Sin condescendencia. Sé específico sobre el impacto en la nota.
-
-RESPONDE ÚNICAMENTE con este JSON (sin texto adicional, sin bloques markdown):
-{
-  "transcripcion_breve": "<primeras 2-3 líneas del texto leído, para confirmar que la imagen es correcta>",
-  "faltas_graves": {
-    "total": <entero>,
-    "ejemplos": [{ "original": "...", "correcto": "...", "descripcion": "..." }],
-    "adicionales": <entero>
-  },
-  "errores_tilde": {
-    "total": <entero>,
-    "ejemplos": [{ "original": "...", "correcto": "...", "descripcion": "..." }],
-    "adicionales": <entero>
-  },
-  "penalizacion_total": <decimal >= 0>,
-  "calculo": "<N faltas × 0,5 + M grupos de 3 tildes × 0,5>",
-  "valoracion": "<párrafo cordial y constructivo al opositor, 3-5 frases>"
-}`;
-
-  // ── Analizar ─────────────────────────────────────────────────
-  async function analizarExamen() {
-    if (!apiKey) { abrirModal(); return; }
-
-    const idxs = Array.from(seleccionadas).sort((a, b) => a - b);
-    if (idxs.length === 0) {
-      mostrarError('Sube un archivo y selecciona al menos una página para analizar.');
-      return;
-    }
-
-    document.getElementById('btnAnalizar').disabled = true;
-    document.getElementById('results').style.display = 'none';
-    document.getElementById('errorState').style.display = 'none';
-    setLoading(true, 'Enviando imágenes a Gemini…');
-
-    try {
-      // Construir partes para Gemini (multimodal)
-      // Gemini API: contents[].parts[] con { text } o { inlineData: { mimeType, data } }
-      const parts = [];
-
-      // Instrucción + prompt
-      parts.push({ text: SYSTEM_TEXT });
-      parts.push({ text: '\n\nAnaliza el texto manuscrito de las siguientes imágenes:' });
-
-      idxs.forEach((idx, i) => {
-        if (idxs.length > 1) parts.push({ text: `— Página ${i + 1} —` });
-        parts.push({
-          inlineData: {
-            mimeType: paginas[idx].mime,
-            data: paginas[idx].data
-          }
-        });
-      });
-
-      setLoading(true, 'Analizando el manuscrito… (puede tardar unos segundos)');
-
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts }],
-          generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 2048
-          }
-        })
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        const msg = err.error?.message || `Error ${res.status}`;
-        if (res.status === 400 && msg.includes('API_KEY')) throw new Error('Clave API inválida. Compruébala en aistudio.google.com/apikey.');
-        if (res.status === 403) throw new Error('Clave API sin permisos o cuota agotada. Compruébala en aistudio.google.com.');
-        if (res.status === 429) throw new Error('Límite de peticiones alcanzado. Espera unos segundos e inténtalo de nuevo.');
-        throw new Error(msg);
+  try {
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
+    var body = {
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: 'Analiza ortográficamente este texto de un opositor:\n\n' + texto }] }],
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 4096,
+        responseMimeType: 'application/json'
       }
+    };
 
-      const data = await res.json();
+    var res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
 
-      // Extraer texto de la respuesta Gemini
-      const raw = data?.candidates?.[0]?.content?.parts
-        ?.map(p => p.text || '').join('') || '';
+    if (!res.ok) {
+      var err = await res.json().catch(function(){ return {}; });
+      var msg = (err.error && err.error.message) ? err.error.message : res.statusText;
+      throw new Error('Error Gemini (' + res.status + '): ' + msg);
+    }
 
-      if (!raw) throw new Error('Gemini no devolvió respuesta. Inténtalo de nuevo.');
+    var data = await res.json();
+    if (!data.candidates || !data.candidates[0]) {
+      throw new Error('Gemini no devolvió respuesta. Comprueba tu clave API.');
+    }
 
-      // Limpiar posibles bloques markdown
-      const clean = raw.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+    var raw = data.candidates[0].content.parts.map(function(p){ return p.text || ''; }).join('');
+    var clean = raw.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
 
-      let resultado;
-      try { resultado = JSON.parse(clean); }
-      catch {
-        // Intentar extraer JSON con regex por si hay texto extra
-        const match = clean.match(/\{[\s\S]*\}/);
-        if (match) {
-          try { resultado = JSON.parse(match[0]); }
-          catch { throw new Error('No se pudo interpretar la respuesta. Inténtalo de nuevo.'); }
-        } else {
-          throw new Error('Gemini no devolvió un JSON válido. Inténtalo de nuevo.');
-        }
-      }
+    var inf;
+    try { inf = JSON.parse(clean); }
+    catch(e) { throw new Error('Respuesta malformada. Inténtalo de nuevo.'); }
 
-      mostrarResultados(resultado);
+    pararPasos();
+    document.getElementById('loader').classList.remove('visible');
+    renderInforme(inf);
 
-    } catch(err) {
-      mostrarError(err.message);
-    } finally {
-      document.getElementById('btnAnalizar').disabled = false;
-      setLoading(false);
+  } catch(err) {
+    pararPasos();
+    document.getElementById('loader').classList.remove('visible');
+    document.getElementById('btn-revisar').disabled = false;
+    errorEl.textContent = '⚠️ ' + err.message;
+    errorEl.classList.add('visible');
+    console.error(err);
+  }
+}
+
+// ═══════════════════════════ RENDER ═══════════════════════════
+function renderInforme(inf) {
+  var penTotal = inf.penalizacion_total || 0;
+  var nGraves = inf.graves.total || 0;
+  var nTildes = inf.tildes.total || 0;
+  var nAbrev = inf.abreviaturas.total || 0;
+
+  // Cabecera
+  document.getElementById('inf-palabras').textContent =
+    (inf.total_palabras || '?') + ' palabras analizadas';
+  document.getElementById('inf-pen').textContent = '−' + penTotal.toFixed(1) + 'p';
+  document.getElementById('inf-pen').style.color = penTotal === 0 ? '#4caf50' : penTotal < 1 ? '#f9c800' : penTotal < 2 ? '#ff9800' : '#e53935';
+
+  var estado = penTotal === 0 ? 'SIN PENALIZACIÓN' : penTotal < 1 ? 'PENALIZACIÓN LEVE' : penTotal < 2 ? 'PENALIZACIÓN MODERADA' : 'PENALIZACIÓN ALTA';
+  document.getElementById('inf-estado').textContent = estado;
+
+  // Tarjetas
+  document.getElementById('n-graves').textContent = nGraves;
+  document.getElementById('sub-graves').textContent = nGraves > 0 ? '−' + inf.graves.penalizacion.toFixed(1) + 'p' : 'Sin faltas';
+  document.getElementById('n-tildes').textContent = nTildes;
+  document.getElementById('sub-tildes').textContent = nTildes > 0 ? inf.tildes.faltas_equivalentes + ' falta(s) equiv. · −' + inf.tildes.penalizacion.toFixed(1) + 'p' : 'Sin errores';
+  document.getElementById('n-abrev').textContent = nAbrev;
+  document.getElementById('sub-abrev').textContent = nAbrev > 0 ? '−' + inf.abreviaturas.penalizacion.toFixed(1) + 'p' : 'Sin errores';
+
+  // Barra
+  var pct = Math.min(100, Math.round((penTotal / 3) * 100));
+  document.getElementById('barra-fill').style.width = pct + '%';
+  document.getElementById('barra-label-der').textContent =
+    penTotal.toFixed(1) + 'p de penalización (referencia: ≥3p es muy grave)';
+
+  // Cuerpo dinámico
+  var html = '';
+
+  // Sin errores totales
+  if (nGraves === 0 && nTildes === 0 && nAbrev === 0) {
+    html += '<div class="sin-errores">✅ No se han detectado errores ortográficos, de acentuación ni de abreviaturas. ¡Texto impecable!</div>';
+  }
+
+  // FALTAS GRAVES
+  if (nGraves > 0) {
+    html += '<div class="seccion-titulo" style="margin-top:8px">Faltas ortográficas graves — ' + nGraves + ' error' + (nGraves>1?'es':'') + ' · −' + inf.graves.penalizacion.toFixed(1) + 'p</div>';
+    html += '<table class="tabla-errores"><thead><tr><th>Escrito</th><th>Correcto</th><th>Descripción</th></tr></thead><tbody>';
+    inf.graves.ejemplos.forEach(function(e) {
+      html += '<tr><td><span class="incorrecto">' + esc(e.incorrecto) + '</span></td>'
+            + '<td><span class="correcto">✓ ' + esc(e.correcto) + '</span></td>'
+            + '<td>' + esc(e.descripcion) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    if (inf.graves.adicionales > 0) {
+      html += '<div class="mas-errores">⚠️ Y ' + inf.graves.adicionales + ' error(es) grave(s) más no listado(s). Revisa el texto completo.</div>';
     }
   }
 
-  // ── Mostrar resultados ───────────────────────────────────────
-  function mostrarResultados(r) {
-    const notaPartidaVal = document.getElementById('notaPartida').value;
-    const notaPartida = notaPartidaVal !== '' ? parseFloat(notaPartidaVal) : null;
-    const pen = r.penalizacion_total || 0;
-    const notaFinal = notaPartida !== null ? Math.max(0, notaPartida - pen) : null;
-
-    const nivel = pen === 0 ? 'excellent' : pen <= 1 ? 'good' : 'poor';
-    const labelNivel = {
-      excellent: '✅ Sin penalizaciones ortográficas',
-      good:      '⚠️ Penalización leve',
-      poor:      '❌ Penalización significativa'
-    }[nivel];
-
-    const scoreInner = notaFinal !== null
-      ? `<span class="snumber">${notaFinal.toFixed(2).replace('.', ',')}</span><span class="slbl">nota final</span>`
-      : `<span style="font-size:1.5rem">${pen===0?'✓':pen<=1?'!':'✗'}</span>`;
-
-    const gt = Math.floor((r.errores_tilde?.total || 0) / 3);
-    const chips = [
-      `<span class="chip">🔴 Faltas graves: <strong>${r.faltas_graves?.total || 0}</strong></span>`,
-      `<span class="chip">🟡 Errores tilde: <strong>${r.errores_tilde?.total || 0}</strong></span>`,
-      `<span class="chip">📉 Penalización: <strong>−${pen.toFixed(2).replace('.', ',')}</strong></span>`,
-      ...(notaPartida !== null
-        ? [`<span class="chip">📝 Nota partida: <strong>${notaPartida.toFixed(2).replace('.', ',')}</strong></span>`]
-        : [])
-    ].join('');
-
-    const transcHtml = r.transcripcion_breve ? `
-      <div class="transc-card">
-        <div class="transc-hd" onclick="toggleTransc(this)">
-          <h3>📖 Texto detectado en la imagen</h3>
-          <span class="tarrow">▼</span>
-        </div>
-        <div class="transc-body">${esc(r.transcripcion_breve)}</div>
-      </div>` : '';
-
-    const bGraves = r.faltas_graves?.total === 0
-      ? `<span class="sb g">Sin faltas</span>`
-      : `<span class="sb r">${r.faltas_graves.total} falta${r.faltas_graves.total!==1?'s':''}</span>`;
-    const pGraves = (r.faltas_graves?.total || 0) > 0
-      ? `<span class="sb p">−${(r.faltas_graves.total * 0.5).toFixed(1).replace('.',',')} pts</span>` : '';
-
-    const bTildes = r.errores_tilde?.total === 0
-      ? `<span class="sb g">Sin errores</span>`
-      : `<span class="sb a">${r.errores_tilde.total} errores · ${gt} grupo${gt!==1?'s':''} de 3</span>`;
-    const pTildes = gt > 0
-      ? `<span class="sb p">−${(gt * 0.5).toFixed(1).replace('.',',')} pts</span>` : '';
-
-    document.getElementById('results').innerHTML = `
-      ${transcHtml}
-      <div class="score-banner ${nivel}">
-        <div class="score-circle ${nivel}">${scoreInner}</div>
-        <div class="sinfo">
-          <h2>${labelNivel}</h2>
-          <p class="scalc">${esc(r.calculo)}</p>
-          <div class="schips">${chips}</div>
-        </div>
-      </div>
-      <div class="error-section">
-        <div class="esh"><h3>🔴 Faltas ortográficas graves</h3>${bGraves}${pGraves}</div>
-        ${buildTabla(r.faltas_graves)}
-      </div>
-      <div class="error-section">
-        <div class="esh"><h3>🟡 Errores de acentuación</h3>${bTildes}${pTildes}</div>
-        ${buildTabla(r.errores_tilde)}
-      </div>
-      <div class="val-card">
-        <h3>💬 Valoración</h3>
-        <div class="val-text">${esc(r.valoracion)}</div>
-      </div>`;
-    document.getElementById('results').style.display = 'block';
-    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // TILDES
+  if (nTildes > 0) {
+    html += '<div class="seccion-titulo">Errores de acentuación — ' + nTildes + ' error' + (nTildes>1?'es':'') + ' · ' + inf.tildes.faltas_equivalentes + ' falta(s) equiv. · −' + inf.tildes.penalizacion.toFixed(1) + 'p</div>';
+    html += '<table class="tabla-errores"><thead><tr><th>Escrito</th><th>Correcto</th><th>Descripción</th></tr></thead><tbody>';
+    inf.tildes.ejemplos.forEach(function(e) {
+      html += '<tr><td><span class="incorrecto">' + esc(e.incorrecto) + '</span></td>'
+            + '<td><span class="correcto">✓ ' + esc(e.correcto) + '</span></td>'
+            + '<td>' + esc(e.descripcion) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    if (inf.tildes.adicionales > 0) {
+      html += '<div class="mas-errores">⚠️ Y ' + inf.tildes.adicionales + ' error(es) de tilde más no listado(s).</div>';
+    }
   }
 
-  function buildTabla(sec) {
-    if (!sec || sec.total === 0)
-      return `<div class="no-errors">✅ Sin errores en esta categoría.</div>`;
-    const rows = (sec.ejemplos || []).map(e =>
-      `<tr>
-        <td><span class="ww">${esc(e.original)}</span></td>
-        <td><span class="wr">${esc(e.correcto)}</span></td>
-        <td class="ed">${esc(e.descripcion)}</td>
-      </tr>`
-    ).join('');
-    const extra = sec.adicionales > 0
-      ? `<div class="extras">+ ${sec.adicionales} error${sec.adicionales!==1?'es':''} adicional${sec.adicionales!==1?'es':''} no listado${sec.adicionales!==1?'s':''} (se muestran los 5 más representativos).</div>`
-      : '';
-    return `
-      <table class="et">
-        <thead><tr><th>Encontrado</th><th>Correcto</th><th>Descripción</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>${extra}`;
+  // ABREVIATURAS Y SIGLAS
+  if (nAbrev > 0) {
+    html += '<div class="seccion-titulo">Abreviaturas y siglas — ' + nAbrev + ' error' + (nAbrev>1?'es':'') + ' · −' + inf.abreviaturas.penalizacion.toFixed(1) + 'p</div>';
+    html += '<table class="tabla-errores"><thead><tr><th>Escrito</th><th>Correcto</th><th>Descripción</th></tr></thead><tbody>';
+    inf.abreviaturas.ejemplos.forEach(function(e) {
+      html += '<tr><td><span class="incorrecto">' + esc(e.incorrecto) + '</span></td>'
+            + '<td><span class="correcto">✓ ' + esc(e.correcto) + '</span></td>'
+            + '<td>' + esc(e.descripcion) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    if (inf.abreviaturas.adicionales > 0) {
+      html += '<div class="mas-errores">⚠️ Y ' + inf.abreviaturas.adicionales + ' error(es) de abreviatura/sigla más no listado(s).</div>';
+    }
   }
 
-  function toggleTransc(hd) {
-    const body = hd.nextElementSibling;
-    const open = body.classList.toggle('open');
-    hd.querySelector('.tarrow').classList.toggle('open', open);
+  // Valoración
+  html += '<div class="seccion-titulo" style="margin-top:28px">Valoración global</div>';
+  html += '<div class="valoracion-bloque"><p class="valoracion-texto">' + esc(inf.valoracion) + '</p></div>';
+
+  if (inf.puntos_fuertes) {
+    html += '<div class="recuadro rec-verde"><div class="rec-titulo">✅ Puntos fuertes</div><div class="rec-texto">' + esc(inf.puntos_fuertes) + '</div></div>';
+  }
+  if (inf.recomendacion) {
+    html += '<div class="recuadro rec-naranja"><div class="rec-titulo">⚠️ Recomendación prioritaria</div><div class="rec-texto">' + esc(inf.recomendacion) + '</div></div>';
   }
 
-  // ── Helpers ──────────────────────────────────────────────────
-  function setLoading(show, msg = '') {
-    document.getElementById('loadingState').style.display = show ? 'flex' : 'none';
-    if (msg) document.getElementById('loadingMsg').textContent = msg;
+  document.getElementById('inf-dinamico').innerHTML = html;
+
+  // Guardar texto plano para copiar
+  window._informeTexto = generarTextoPlano(inf);
+
+  document.getElementById('informe-zona').classList.add('visible');
+  document.getElementById('btn-revisar').disabled = false;
+  document.getElementById('informe-zona').scrollIntoView({ behavior: 'smooth' });
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════ TEXTO PLANO ═══════════════════════════
+function generarTextoPlano(inf) {
+  var t = 'INFORME DE REVISIÓN ORTOGRÁFICA — ACADEMIA ÁBACOS\n' + '='.repeat(40) + '\n\n';
+  t += 'Palabras analizadas: ' + (inf.total_palabras || '?') + '\n';
+  t += 'Penalización total: −' + inf.penalizacion_total.toFixed(1) + 'p\n\n';
+  t += 'RESUMEN\n' + '─'.repeat(20) + '\n';
+  t += '• Faltas graves: ' + inf.graves.total + ' → −' + inf.graves.penalizacion.toFixed(1) + 'p\n';
+  t += '• Errores de tilde: ' + inf.tildes.total + ' (' + inf.tildes.faltas_equivalentes + ' falta equiv.) → −' + inf.tildes.penalizacion.toFixed(1) + 'p\n';
+  t += '• Errores abreviaturas/siglas: ' + inf.abreviaturas.total + ' → −' + inf.abreviaturas.penalizacion.toFixed(1) + 'p\n\n';
+  if (inf.graves.ejemplos.length) {
+    t += 'FALTAS GRAVES\n' + '─'.repeat(20) + '\n';
+    inf.graves.ejemplos.forEach(function(e){ t += '✗ "' + e.incorrecto + '" → "' + e.correcto + '": ' + e.descripcion + '\n'; });
+    if (inf.graves.adicionales) t += '(+ ' + inf.graves.adicionales + ' error(es) más)\n';
+    t += '\n';
   }
-  function mostrarError(msg) {
-    const el = document.getElementById('errorState');
-    el.innerHTML = '⚠️ ' + esc(msg);
-    el.style.display = 'block';
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (inf.tildes.ejemplos.length) {
+    t += 'ERRORES DE TILDE\n' + '─'.repeat(20) + '\n';
+    inf.tildes.ejemplos.forEach(function(e){ t += '✗ "' + e.incorrecto + '" → "' + e.correcto + '": ' + e.descripcion + '\n'; });
+    if (inf.tildes.adicionales) t += '(+ ' + inf.tildes.adicionales + ' error(es) más)\n';
+    t += '\n';
   }
-  function esc(s) {
-    if (!s) return '';
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  if (inf.abreviaturas.ejemplos.length) {
+    t += 'ERRORES DE ABREVIATURAS/SIGLAS\n' + '─'.repeat(20) + '\n';
+    inf.abreviaturas.ejemplos.forEach(function(e){ t += '✗ "' + e.incorrecto + '" → "' + e.correcto + '": ' + e.descripcion + '\n'; });
+    if (inf.abreviaturas.adicionales) t += '(+ ' + inf.abreviaturas.adicionales + ' error(es) más)\n';
+    t += '\n';
   }
+  t += 'VALORACIÓN\n' + '─'.repeat(20) + '\n' + inf.valoracion + '\n\n';
+  if (inf.puntos_fuertes) t += 'PUNTOS FUERTES\n' + inf.puntos_fuertes + '\n\n';
+  if (inf.recomendacion) t += 'RECOMENDACIÓN\n' + inf.recomendacion + '\n';
+  return t;
+}
+
+// ═══════════════════════════ ACCIONES ═══════════════════════════
+function copiarInforme() {
+  var txt = window._informeTexto || '';
+  navigator.clipboard.writeText(txt).then(function() {
+    var btn = document.querySelector('[onclick="copiarInforme()"]');
+    var orig = btn.textContent;
+    btn.textContent = '✅ Copiado';
+    setTimeout(function(){ btn.textContent = orig; }, 2000);
+  }).catch(function() { alert('No se pudo copiar automáticamente.'); });
+}
+
+function nuevoTexto() {
+  document.getElementById('texto-input').value = '';
+  document.getElementById('informe-zona').classList.remove('visible');
+  document.getElementById('error-msg').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('texto-input').focus();
+}
+
 </script>
 </body>
 </html>
