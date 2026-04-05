@@ -83,7 +83,7 @@ header p {
 
 label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; color: var(--gris-oscuro); }
 
-input[type="text"], input[type="password"], textarea {
+input[type="text"], input[type="password"], textarea, select {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
@@ -218,6 +218,12 @@ textarea { height: 180px; resize: vertical; }
         Consíguela gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--rojo)">Google AI Studio</a>.
       </p>
 
+      <label for="model-select">Modelo IA</label>
+      <select id="model-select" onchange="guardarModelo()">
+        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Recomendado)</option>
+        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Más lento, más preciso)</option>
+      </select>
+
       <label>Nombre del Opositor</label>
       <input type="text" id="nombre-opositor" placeholder="Introduce nombre completo...">
 
@@ -257,7 +263,7 @@ textarea { height: 180px; resize: vertical; }
 
   <div id="loading-state" class="indicador-carga" style="display:none">
       <div class="spinner" style="display:inline-block; border-top-color:var(--negro); width:40px; height:40px"></div>
-      <p style="margin-top:15px; font-style:italic">Gemini está analizando la ortografía...</p>
+      <p id="loading-text" style="margin-top:15px; font-style:italic">Gemini está analizando la ortografía...</p>
   </div>
 
   <!-- Informe en pantalla -->
@@ -307,21 +313,24 @@ textarea { height: 180px; resize: vertical; }
 </div>
 
 <script>
-const modelName = "gemini-2.5-flash-preview-09-2025";
 let archivosExamen = [];
 let ultimaData = null;
 
-// Al cargar, recuperar la API Key si existe
+// Al cargar, recuperar preferencias
 window.onload = () => {
   const savedKey = localStorage.getItem('gemini_api_key');
-  if (savedKey) {
-    document.getElementById('api-key-input').value = savedKey;
-  }
+  if (savedKey) document.getElementById('api-key-input').value = savedKey;
+  
+  const savedModel = localStorage.getItem('gemini_model');
+  if (savedModel) document.getElementById('model-select').value = savedModel;
 };
 
 function guardarApiKey() {
-  const key = document.getElementById('api-key-input').value;
-  localStorage.setItem('gemini_api_key', key);
+  localStorage.setItem('gemini_api_key', document.getElementById('api-key-input').value.trim());
+}
+
+function guardarModelo() {
+  localStorage.setItem('gemini_model', document.getElementById('model-select').value);
 }
 
 document.getElementById('file-input').addEventListener('change', e => {
@@ -341,22 +350,28 @@ document.getElementById('file-input').addEventListener('change', e => {
   });
 });
 
-async function llamarGemini(payload, apiKey) {
+async function llamarGemini(payload, apiKey, model) {
   let retries = 0;
-  while (retries < 5) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  
+  while (retries < 3) {
     try {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const resp = await fetch(url, {
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      
       if (!resp.ok) {
-        if (resp.status === 400) throw new Error("Clave de API inválida o error en la petición.");
-        throw new Error(`HTTP ${resp.status}`);
+        if (resp.status === 404) throw new Error(`El modelo '${model}' no fue encontrado. Intenta con 'gemini-1.5-flash'.`);
+        if (resp.status === 401 || resp.status === 403) throw new Error("Clave de API inválida o sin permisos.");
+        const errorData = await resp.json();
+        throw new Error(errorData.error?.message || `Error HTTP ${resp.status}`);
       }
       return await resp.json();
     } catch (err) {
       retries++;
-      if (retries === 5) throw err;
+      if (retries === 3) throw err;
       await new Promise(r => setTimeout(r, Math.pow(2, retries) * 1000));
     }
   }
@@ -364,6 +379,7 @@ async function llamarGemini(payload, apiKey) {
 
 async function iniciarProceso() {
   const apiKey = document.getElementById('api-key-input').value.trim();
+  const model = document.getElementById('model-select').value;
   const nombre = document.getElementById('nombre-opositor').value || "Opositor/a";
   const textoPegado = document.getElementById('texto-transcrito').value;
   const btn = document.getElementById('btn-procesar');
@@ -371,7 +387,7 @@ async function iniciarProceso() {
   const zona = document.getElementById('informe-zona');
 
   if (!apiKey) {
-    alert("Por favor, introduce tu propia clave de API de Gemini en el panel lateral.");
+    alert("Por favor, introduce tu propia clave de API de Gemini.");
     return;
   }
 
@@ -380,7 +396,9 @@ async function iniciarProceso() {
     return; 
   }
 
-  btn.disabled = true; loader.style.display = 'block'; zona.classList.remove('visible');
+  btn.disabled = true; 
+  loader.style.display = 'block'; 
+  zona.classList.remove('visible');
 
   const promptSistema = `Eres un corrector experto en oposiciones de Maestros (Extremadura). 
   REGLAS DE CÁLCULO ESTRICTAS:
@@ -388,9 +406,9 @@ async function iniciarProceso() {
   - Tildes omitidas o incorrectas cuentan para el bloque de acentuación.
   - Abreviaturas mal cerradas, siglas con puntos o plurales son FALTAS GRAVES.
   
-  MANDATORIO: El campo "feedback" debe contener una valoración detallada, cordial y motivadora. NO LO DEJES VACÍO.
+  MANDATORIO: El campo "feedback" debe contener una valoración detallada, cordial y motivadora de al menos 4-5 líneas.
   
-  Devuelve un JSON con esta estructura:
+  Devuelve un JSON con esta estructura exacta:
   {
     "faltas_graves": [{"incorrecto":"", "correcto":"", "descripcion":""}],
     "errores_acentuacion": [{"incorrecto":"", "correcto":"", "descripcion":""}],
@@ -403,9 +421,9 @@ async function iniciarProceso() {
 
   let userParts = [];
   if (textoPegado) {
-    userParts.push({ text: "Analiza y corrige ortográficamente el siguiente texto según los criterios de Extremadura: " + textoPegado });
+    userParts.push({ text: "Corrige ortográficamente este texto: " + textoPegado });
   } else {
-    userParts.push({ text: "Analiza y corrige ortográficamente estos documentos de examen manuscrito según los criterios de Extremadura:" });
+    userParts.push({ text: "Transcribe y corrige ortográficamente estos documentos de examen manuscrito:" });
     archivosExamen.forEach(f => userParts.push({ inlineData: { mimeType: f.mimeType, data: f.data } }));
   }
 
@@ -414,7 +432,7 @@ async function iniciarProceso() {
       contents: [{ role: "user", parts: userParts }],
       systemInstruction: { parts: [{ text: promptSistema }] },
       generationConfig: { responseMimeType: "application/json" }
-    }, apiKey);
+    }, apiKey, model);
 
     const data = JSON.parse(result.candidates[0].content.parts[0].text);
     ultimaData = data;
