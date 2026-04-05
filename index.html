@@ -515,73 +515,25 @@ function pararPasos() { clearInterval(pasoTimer); }
 // PROMPT SISTEMA
 // ═══════════════════════════════════════════
 function buildSystemPrompt() {
-  return `Eres un corrector ortográfico experto especializado en exámenes de oposiciones al Cuerpo de Maestros de Educación Primaria en Extremadura. Tu única función es detectar errores ortográficos, de acentuación y de abreviaturas en textos escritos por opositores.
+  return `Eres corrector ortografico experto de oposiciones al Cuerpo de Maestros de Educacion Primaria en Extremadura.
 
-REGLAS DE PENALIZACIÓN (criterios oficiales del Tribunal):
-- Cada falta ortográfica grave: −0,5 puntos sobre la nota final
-- Cada 3 errores de acentuación (tildes): equivalen a 1 falta (−0,5 puntos)
-- La nota final nunca puede ser negativa
+PENALIZACION: Falta grave = -0,5 pts. Cada 3 tildes = 1 falta (-0,5 pts). Nota nunca negativa.
 
-CATEGORÍAS DE ERRORES A DETECTAR:
+FALTAS GRAVES: errores b/v, h, ll/y, g/j, c/s/z | abreviatura sin punto (pag -> pag.) | abreviatura sin espacio (p.ej. -> p. ej.) | ordinal sin punto (1o -> 1.o) | sigla con puntos (L.O.M.L.O.E. -> LOMLOE) | sigla plural (ONGs -> ONG) | abreviatura informal (xq, tb, x).
 
-FALTAS GRAVES (−0,5p cada una):
-- Errores léxicos: confusión b/v, h, ll/y, g/j, c/s/z, y similares
-- Abreviatura sin punto de cierre: "pag" en lugar de "pág."
-- Abreviatura compleja sin espacio tras cada punto: "p.ej." → "p. ej."; "EE.UU." → "EE. UU."
-- Número ordinal sin punto antes de letra volada: "1º" → "1.º"; "2ª" → "2.ª"
-- Sigla con puntos entre letras: "D.N.I." → "DNI"; "L.O.M.L.O.E." → "LOMLOE"
-- Sigla con marca de plural: "ONGs" → "ONG"
-- Abreviatura no convencional: xq, tb, dnd, x, d (prohibidas en oposiciones)
+TILDES: tilde omitida o incorrecta en cualquier palabra. Abreviatura con tilde omitida (pag. -> pag.).
 
-ERRORES DE ACENTUACIÓN (cada 3 = 1 falta):
-- Tilde omitida o incorrecta en cualquier palabra
-- Abreviatura que debería llevar tilde y no la lleva: "pag." → "pág."; "cod." → "cód."
+ABREVIATURAS CORRECTAS: art. | pag. | num./n.o | p. ej. | C. A. | R. D. | admon.
+SIGLAS sin puntos (LOMLOE, DUA, TIC). Excepcion: EE. UU.
 
-ABREVIATURAS CORRECTAS DE REFERENCIA (RAE / Extremadura):
-art./arts. | pág./págs. | núm./n.º | cap./caps. | sig./ss. | etc. | p. ej. | C. A./CC. AA. | R. D./RR. DD. | L. O./LL. OO. | U. D./UU. DD. | P. D./PP. DD. | admón.
+INSTRUCCIONES: Detecta SOLO errores reales. No inventes. Lista MAXIMO 5 ejemplos por categoria. Cuenta el total real. NO transcribas el texto. NO anyadas campos extra al JSON.
 
-SIGLAS: invariables en escritura (ONG, no ONGs). Sin puntos entre letras (LOMLOE, DUA, TIC, DNI). Excepción: EE. UU. (con espacio, sin puntos entre letras de cada palabra).
+CALCULO: penalizacion_graves = total_graves x 0.5 | grupos_tildes = floor(total_tildes/3) | penalizacion_tildes = grupos_tildes x 0.5 | penalizacion_total = suma de ambas.
 
-INSTRUCCIONES DE ANÁLISIS:
-- Detecta SOLO errores reales y objetivos. No inventes errores ni seas subjetivo.
-- Si no hay errores en una categoría, devuelve array vacío.
-- Para cada error: cita la palabra o expresión exacta del texto, describe el error brevemente, indica la forma correcta.
-- Cuenta el total real de cada tipo de error aunque no los listes todos.
-- Lista únicamente los 5 ejemplos más representativos de cada categoría.
-- Si hay más de 5, indícalo en el campo "adicionales".
-- Transcribe el texto del manuscrito aunque no hagas análisis del mismo (campo "texto_transcrito").
+TONO: tutea, cordial, directo, sin formulas vacias. Campos de texto: maximo 20 palabras cada uno.
 
-CÁLCULO DE PENALIZACIÓN:
-- penalizacion_graves = total_graves × 0.5
-- grupos_tildes_completos = Math.floor(total_tildes / 3)
-- penalizacion_tildes = grupos_tildes_completos × 0.5
-- penalizacion_total = penalizacion_graves + penalizacion_tildes (nunca negativa)
-
-TONO: Dirígete al opositor de tú, con un tono cordial, directo y constructivo. Sin condescendencia ni fórmulas vacías. Sé específico sobre el impacto en la nota.
-
-RESPONDE SOLO JSON VÁLIDO SIN MARKDOWN. JSON COMPLETO Y BIEN CERRADO. LÍMITES ESTRICTOS DE LONGITUD: el campo "texto_transcrito" máximo 300 palabras (si el texto es más largo, recórtalo con "..." al final). El campo "descripcion" de cada error: máximo 8 palabras. Los campos "fortalezas", "resumen_impacto" y "recomendacion_final": máximo 2 frases cada uno.
-
-{
-  "texto_transcrito": "texto completo transcrito del manuscrito",
-  "total_graves": number,
-  "total_tildes": number,
-  "penalizacion_graves": number,
-  "grupos_tildes_completos": number,
-  "penalizacion_tildes": number,
-  "penalizacion_total": number,
-  "nivel_general": "Sin errores|Leve|Moderado|Grave|Muy grave",
-  "errores_graves": [
-    { "original": "texto exacto", "descripcion": "descripción del error", "correcto": "forma correcta" }
-  ],
-  "adicionales_graves": number,
-  "errores_tildes": [
-    { "original": "texto exacto", "descripcion": "descripción del error", "correcto": "forma correcta" }
-  ],
-  "adicionales_tildes": number,
-  "resumen_impacto": "frase breve explicando el impacto de los errores encontrados en la nota",
-  "fortalezas": "aspectos ortográficos positivos si los hay (o null si no hay nada destacable)",
-  "recomendacion_final": "1-2 acciones concretas para mejorar"
-}`;
+RESPONDE EXCLUSIVAMENTE CON JSON VALIDO SIN MARKDOWN NI TEXTO EXTRA:
+{"total_graves":0,"total_tildes":0,"penalizacion_graves":0,"grupos_tildes_completos":0,"penalizacion_tildes":0,"penalizacion_total":0,"nivel_general":"Sin errores","errores_graves":[],"adicionales_graves":0,"errores_tildes":[],"adicionales_tildes":0,"resumen_impacto":"","fortalezas":"","recomendacion_final":""}`;
 }
 
 // ═══════════════════════════════════════════
@@ -849,17 +801,6 @@ function renderInforme(inf, nombre, notaBase, notaFinal) {
       <p style="font-size:12px;color:var(--naranja);margin-bottom:10px;">Cada 3 errores de tilde computan como 1 falta ortográfica (−0,5 pts). Con ${tt} errores → ${gt} falta${gt!==1?'s':''} completa${gt!==1?'s':''}.</p>
       ${renderTablaErrores(inf.errores_tildes, inf.adicionales_tildes, 'de tilde')}
     </div>`;
-  }
-
-  // Texto transcrito (colapsable)
-  if (inf.texto_transcrito) {
-    html += `<div class="seccion-titulo" style="margin-top:24px">Texto transcrito</div>
-    <details style="margin-bottom:4px;">
-      <summary style="cursor:pointer;font-size:13px;color:var(--gris-medio);padding:10px 0;user-select:none;">
-        Ver transcripción completa del examen →
-      </summary>
-      <div style="margin-top:12px;padding:18px 22px;background:var(--gris-claro);border-left:3px solid #ccc;font-size:13px;line-height:1.8;white-space:pre-wrap;font-family:Georgia,serif;">${inf.texto_transcrito}</div>
-    </details>`;
   }
 
   // Fortalezas
